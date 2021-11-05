@@ -2,22 +2,23 @@
 namespace Jan\Component\Database\Builder;
 
 
-use Jan\Component\Database\Builder\Contract\SqlExpressionInterface;
+use Jan\Component\Database\Builder\Contract\SqlBuilderInterface;
 
 
 
 /**
- * SqlExpression
+ * SqlBuilder
  *
  * @package Jan\Component\Database\Builder
 */
-abstract class SqlExpression implements SqlExpressionInterface
+abstract class SqlBuilder implements SqlBuilderInterface
 {
 
     /**
      * @var string
     */
     protected $alias;
+
 
 
     /**

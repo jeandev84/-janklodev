@@ -119,4 +119,34 @@ class QueryBuilder extends SqlQueryBuilder
           return $this->connection->query($this->getSQL(), $this->getParameters())
                                   ->execute();
       }
+
+
+
+
+     /**
+      * @param string $table
+      * @return SqlQueryBuilder
+     */
+      public function table(string $table): SqlQueryBuilder
+      {
+          $table = $this->generateTableName($table);
+
+          return parent::table($table);
+      }
+
+
+
+      /**
+      * @param string $context
+      * @return string
+     */
+     protected function generateTableName(string $context): string
+     {
+         if (class_exists($context)) {
+            $tableName =  (new \ReflectionClass($context))->getShortName();
+            return mb_strtolower(trim($tableName, 's')). 's';
+         }
+
+         return $context;
+     }
 }

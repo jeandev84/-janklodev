@@ -3,11 +3,11 @@ namespace Jan\Component\Database\Builder\Contract;
 
 
 /**
- * SqlExpressionInterface
+ * SqlBuilderInterface
  *
  * @package Jan\Component\Database\Builder\Contract
 */
-interface SqlExpressionInterface
+interface SqlBuilderInterface
 {
     /**
      * @return string

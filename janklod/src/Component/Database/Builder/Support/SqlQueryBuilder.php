@@ -9,7 +9,7 @@ use Jan\Component\Database\Builder\Queries\From;
 use Jan\Component\Database\Builder\Queries\Insert;
 use Jan\Component\Database\Builder\Queries\Select;
 use Jan\Component\Database\Builder\Queries\Update;
-use Jan\Component\Database\Builder\SqlExpression;
+use Jan\Component\Database\Builder\SqlBuilder;
 use Jan\Component\Database\Utils\Str;
 
 /**
@@ -41,7 +41,7 @@ class SqlQueryBuilder
      /**
       * @var array
      */
-     protected $sqlExpressions = [];
+     protected $sqlCommands = [];
 
 
 
@@ -49,14 +49,6 @@ class SqlQueryBuilder
       * @var array
      */
      protected $sqlParts = [];
-
-
-
-     /**
-      * @var array
-     */
-     protected $queriesLog = [];
-
 
 
 
@@ -74,8 +66,6 @@ class SqlQueryBuilder
      */
      public function table(string $table): SqlQueryBuilder
      {
-         $table = $this->generateTableName($table);
-
          $this->table = $table;
 
          if (! $this->alias) {
@@ -135,7 +125,7 @@ class SqlQueryBuilder
      */
      public function where(string $condition): SqlQueryBuilder
      {
-         return $this->addConditionSQL($condition);
+         return $this->addSQLConstraints($condition);
      }
 
 
@@ -146,7 +136,7 @@ class SqlQueryBuilder
      */
      public function andWhere(string $condition): SqlQueryBuilder
      {
-         return $this->addConditionSQL($condition, 'AND');
+         return $this->addSQLConstraints($condition, 'AND');
      }
 
 
@@ -158,7 +148,7 @@ class SqlQueryBuilder
      */
      public function orWhere(string $condition): SqlQueryBuilder
      {
-         return $this->addConditionSQL($condition, "OR");
+         return $this->addSQLConstraints($condition, "OR");
      }
 
 
@@ -169,7 +159,7 @@ class SqlQueryBuilder
      */
      public function notWhere(string $condition): SQlQueryBuilder
      {
-        return $this->addConditionSQL($condition, "NOT");
+        return $this->addSQLConstraints($condition, "NOT");
      }
 
 
@@ -180,7 +170,7 @@ class SqlQueryBuilder
     */
     public function whereLike(string $pattern): SqlQueryBuilder
     {
-        return $this->addConditionSQL($pattern, "LIKE");
+        return $this->addSQLConstraints($pattern, "LIKE");
     }
 
 
@@ -191,7 +181,7 @@ class SqlQueryBuilder
     */
     public function whereBetween($first, $end): SqlQueryBuilder
     {
-        return $this->addConditionSQL("$first AND $end", "BETWEEN");
+        return $this->addSQLConstraints("$first AND $end", "BETWEEN");
     }
 
 
@@ -201,7 +191,7 @@ class SqlQueryBuilder
      */
     public function whereIn(array $data): SqlQueryBuilder
     {
-        return $this->addConditionSQL("(". implode(', ', $data).")", "IN");
+        return $this->addSQLConstraints("(". implode(', ', $data).")", "IN");
     }
 
 
@@ -212,7 +202,7 @@ class SqlQueryBuilder
      */
     public function whereNotIn(array $data): SqlQueryBuilder
     {
-        return $this->addConditionSQL("(". implode(', ', $data).")", "NOT IN");
+        return $this->addSQLConstraints("(". implode(', ', $data).")", "NOT IN");
     }
 
 
@@ -327,44 +317,41 @@ class SqlQueryBuilder
          $start = '';
          $parts = [];
 
-         foreach ($this->sqlExpressions as $context) {
-
-             if (! $context instanceof SqlExpression) {
-                 if (\is_array($context)) {
-                     foreach ($context as $c) {
+         foreach ($this->sqlCommands as $command) {
+             if (! $command instanceof SqlBuilder) {
+                 if (\is_array($command)) {
+                     foreach ($command as $c) {
                          $parts[] = $c->buildSQL();
                      }
                  }
              } else {
-                 if ($context->isStart()) {
-                     $start = $context->buildSQL();
+                 if ($command->isStart()) {
+                     $start = $command->buildSQL();
                  }else{
-                     $parts[] = $context->buildSQL();
+                     $parts[] = $command->buildSQL();
                  }
              }
          }
 
-         $sql = sprintf('%s %s', $start, join(' ', $parts));
-         $this->queriesLog[] = $sql;
-         return $sql;
+         return sprintf('%s %s', $start, join(' ', $parts));
      }
 
 
 
      /**
-      * @param SqlExpression $expression
+      * @param SqlBuilder $command
       * @return $this
      */
-     protected function addSQL(SqlExpression $expression): SqlQueryBuilder
+     protected function addSQL(SqlBuilder $command): SqlQueryBuilder
      {
-          $expression->setAlias($this->alias);
+          $command->setAlias($this->alias);
 
           if ($this->table) {
-              $expression->setTable($this->table);
+              $command->setTable($this->table);
           }
 
-          $this->sqlExpressions[$expression->getName()] = $expression;
-          $this->sqlParts[$expression->getName()] = $expression->buildSQL();
+          $this->sqlCommands[$command->getName()] = $command;
+          $this->sqlParts[$command->getName()] = $command->buildSQL();
 
           return $this;
     }
@@ -377,11 +364,11 @@ class SqlQueryBuilder
      * @param string|null $operator
      * @return $this
     */
-    protected function addConditionSQL(string $condition, string $operator = ''): SqlQueryBuilder
+    protected function addSQLConstraints(string $condition, string $operator = ''): SqlQueryBuilder
     {
         $expression = new Constraint($condition);
 
-        if (empty($this->sqlExpressions[$expression->getName()])) {
+        if (empty($this->sqlCommands[$expression->getName()])) {
 
             $expression->setOperator("WHERE");
             if ($operator && ! \in_array($operator, ["AND", "OR"])) {
@@ -397,7 +384,7 @@ class SqlQueryBuilder
             $expression->setOperator($operator);
         }
 
-        $this->sqlExpressions[$expression->getName()][] = $expression;
+        $this->sqlCommands[$expression->getName()][] = $expression;
         $this->sqlParts[$expression->getName()][] = $expression->buildSQL();
 
         return $this;
@@ -411,51 +398,6 @@ class SqlQueryBuilder
     public function getSqlParts(): array
     {
         return $this->sqlParts;
-    }
-
-
-
-    /**
-     * @return array
-    */
-    public function getQueriesLog(): array
-    {
-        return $this->queriesLog;
-    }
-
-
-
-    /**
-     * @param string $context
-     * @return string
-    */
-    protected function generateTableName(string $context): string
-    {
-        if (class_exists($context)) {
-            $tableName =  (new \ReflectionClass($context))->getShortName();
-            return mb_strtolower(trim($tableName, 's')). 's';
-        }
-
-        return $context;
-    }
-
-
-    /**
-     * @param object|string $context
-     * @param null $name
-     * @return string
-     */
-    public function mak($context, $name = null): string
-    {
-        if (is_object($context)) {
-            $name = (new ReflectionObject($context))->getShortName();
-        } else {
-            if (is_string($context) && class_exists($context)) {
-                $name =  (new \ReflectionClass($context))->getShortName();
-            }
-        }
-
-        return mb_strtolower(trim($name, 's')). 's';
     }
 }
 

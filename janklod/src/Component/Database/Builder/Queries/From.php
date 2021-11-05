@@ -1,13 +1,15 @@
 <?php
 namespace Jan\Component\Database\Builder\Queries;
 
-use Jan\Component\Database\Builder\SqlExpression;
+use Jan\Component\Database\Builder\SqlBuilder;
 
 
 /**
- * @package
+ * Class From
+ * 
+ * @package Jan\Component\Database\Builder\Queries
 */
-class From extends SqlExpression
+class From extends SqlBuilder
 {
 
 

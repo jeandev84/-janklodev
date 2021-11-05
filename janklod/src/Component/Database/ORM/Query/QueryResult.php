@@ -149,12 +149,10 @@ class QueryResult
     */
     protected function collects(array $results): array
     {
-        $collection = [];
-
         foreach ($results as $result) {
-            $collection[] = $this->collect($result);
+            $this->collect($result);
         }
 
-        return $collection;
+        return $results;
     }
 }

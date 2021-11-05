@@ -2,14 +2,14 @@
 namespace Jan\Component\Database\Builder\Queries;
 
 
-use Jan\Component\Database\Builder\SqlExpression;
+use Jan\Component\Database\Builder\SqlBuilder;
 
 /**
  * class Constraint
  *
  * @package Jan\Component\Database\Builder\Queries
 */
-class Constraint extends SqlExpression
+class Constraint extends SqlBuilder
 {
 
     /**

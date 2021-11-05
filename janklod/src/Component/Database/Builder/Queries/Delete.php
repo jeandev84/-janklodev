@@ -2,14 +2,14 @@
 namespace Jan\Component\Database\Builder\Queries;
 
 
-use Jan\Component\Database\Builder\SqlExpression;
+use Jan\Component\Database\Builder\SqlBuilder;
 
 /**
  * Class Delete
  *
  * @package Jan\Component\Database\Builder\Queries
 */
-class Delete extends SqlExpression
+class Delete extends SqlBuilder
 {
 
     /**
