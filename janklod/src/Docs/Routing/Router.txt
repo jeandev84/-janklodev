@@ -1,0 +1,58 @@
+<?php
+
+use Jan\Component\Routing\Router;
+
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$router = new Router();
+
+
+$router->get('/', 'HomeController@index')
+       ->name('home');
+
+$router->get('/foo', function() {
+    return 'Hello';
+});
+
+
+try {
+
+    /*
+    $router->api(function (Router $router) {
+        $router->get('/videos', 'VideoController@index', '');
+        $router->get('/video/{id}', 'VideoController@show')
+            ->whereDigital('id');
+        $router->post('/video', 'VideoController@create')
+            ->whereDigital('id');
+        $router->put('/video/{id}', 'VideoController@edit')
+            ->whereDigital('id');
+        $router->delete('/video/{id}', 'VideoController@delete')
+            ->whereDigital('id');
+    });
+    */
+
+    $options = [
+        'prefix'    => 'admin',
+        'namespace' => 'Admin\\',
+        'name'      => 'admin.'
+    ];
+
+    $router->group(function (Router $router) {
+        $router->resource('video', 'VideoController');
+    }, $options);
+
+} catch (\Jan\Component\Routing\Exception\RouteException $e) {
+}
+
+
+$route = $router->match($_SERVER['REQUEST_METHOD'], $path = $_SERVER['REQUEST_URI']);
+
+if (! $route) {
+    dd('Not found route : '. $path);
+}
+
+dump($route);
+dump($router->getResources());
+dump($router->getGroups());
+dd($router->getRoutes());

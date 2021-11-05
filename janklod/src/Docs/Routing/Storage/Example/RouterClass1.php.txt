@@ -1,0 +1,280 @@
+<?php
+namespace Jan\Component\Routing;
+
+
+use Closure;
+use Jan\Component\Routing\Contract\RouteCollectionInterface;
+use Jan\Component\Routing\Contract\RouterInterface;
+use Jan\Component\Routing\Exception\RouteException;
+
+/**
+ * Class Router
+ * @package Jan\Component\Routing
+*/
+class Router extends RouteCollection implements RouterInterface
+{
+
+
+    /**
+     * @var string
+    */
+    protected $baseURL;
+
+
+
+    /**
+     * Router constructor.
+     *
+     * @param string|null $baseURL
+    */
+    public function __construct(string $baseURL = null)
+    {
+         if ($baseURL) {
+             $this->setURL($baseURL);
+         }
+    }
+
+
+
+    /**
+     * @param string $baseURL
+     * @return Router
+    */
+    public function setURL(string $baseURL): Router
+    {
+        $this->baseURL = $baseURL;
+
+        return $this;
+    }
+
+
+
+
+    /**
+     * @param string $path
+     * @param $callback
+     * @param string|null $name
+     * @return Route
+     * @throws Exception\RouteException
+    */
+    public function get(string $path, $callback, string $name = null): Route
+    {
+        return $this->map('GET', $path, $callback, $name);
+    }
+
+
+    /**
+     * @param string $path
+     * @param $callback
+     * @param string|null $name
+     * @return Route
+     * @throws Exception\RouteException
+    */
+    public function post(string $path, $callback, string $name = null): Route
+    {
+        return $this->map('POST', $path, $callback, $name);
+    }
+
+
+
+
+
+    /**
+     * @param string $path
+     * @param $callback
+     * @param string|null $name
+     * @return Route
+     * @throws Exception\RouteException
+    */
+    public function put(string $path, $callback, string $name = null): Route
+    {
+        return $this->map('PUT', $path, $callback, $name);
+    }
+
+
+
+
+    /**
+     * @param string $path
+     * @param $callback
+     * @param string|null $name
+     * @return Route
+     * @throws Exception\RouteException
+    */
+    public function delete(string $path, $callback, string $name = null): Route
+    {
+        return $this->map('DELETE', $path, $callback, $name);
+    }
+
+
+
+
+    /**
+     * @param string $path
+     * @param $callback
+     * @param string|null $name
+     * @return Route
+     * @throws Exception\RouteException
+    */
+    public function any(string $path, $callback, string $name = null): Route
+    {
+        return $this->map('GET|POST|PUT|DELETE|PATCH', $path, $callback, $name);
+    }
+
+
+
+    /**
+     * Determine if the current method and path URL match route
+     *
+     * @param string $requestMethod
+     * @param string $requestUri
+     * @return false|Route
+    */
+    public function match(string $requestMethod, string $requestUri)
+    {
+        /** @var Route $route */
+        foreach ($this->getRoutes() as $route) {
+             if ($route->match($requestMethod, $requestUri)) {
+                 return $route;
+             }
+         }
+
+         return false;
+    }
+
+
+
+    /**
+     * Add route group
+     *
+     * @param Closure $routeCallback
+     * @param array $prefixes
+     * @return RouteCollection
+     * @throws RouteException
+    */
+    public function group(Closure $routeCallback, array $prefixes = []): RouteCollection
+    {
+        return $this->addRouteGroup($routeCallback, $prefixes);
+    }
+
+
+    /**
+     * Api resource
+     *
+     * @param string $prefix
+     * @param string $controller
+     * @return $this
+     * @throws RouteException
+    */
+    public function crud(string $prefix, string $controller): Router
+    {
+        $prefix = trim($prefix, '/');
+        $name   = str_replace('/', '.', $prefix);
+
+        $this->get("/{$prefix}s", "{$controller}@index", "{$name}.list");
+        $this->get("/{$prefix}/{id}", "{$controller}@show", "{$name}.show")
+             ->whereDigital('id');
+        $this->map('GET|POST', "/{$prefix}", "{$controller}@create", "{$name}.create");
+        $this->map('GET|POST',  "/{$prefix}/{id}", "{$controller}@edit", "{$name}.edit")
+             ->whereDigital('id');
+        $this->get("/{$prefix}/{id}", "{$controller}@delete", "{$name}.delete")
+             ->whereDigital('id');
+        $this->get("/{$prefix}/{id}/restore", "{$controller}@restore", "{$name}.restore")
+             ->whereDigital('id');
+
+        return $this;
+    }
+
+
+    
+    
+    /**
+     * route resource
+     * 
+     * @param string $prefix
+     * @param string $controller
+     * @return $this
+     * @throws RouteException
+    */
+    public function resource(string $prefix, string $controller): Router
+    {
+        $prefix = trim($prefix, '/');
+        $prefix = str_replace('/', '.', $prefix);
+
+        $this->get('/'. $prefix .'s', $controller. '@index', $prefix.'.list');
+        $this->get('/'. $prefix .'/{id}', $controller .'@show', $prefix.'.show')
+             ->whereDigital('id');
+
+        $this->post('/'. $prefix, $controller. '@create', $prefix.'.create')
+             ->whereDigital('id');
+
+        $this->put('/'. $prefix .'/{id}', $controller .'@edit', $prefix.'.edit')
+             ->whereDigital('id');
+
+        $this->delete('/'. $prefix .'/{id}', $controller .'@delete', $prefix.'.delete')
+            ->whereDigital('id');
+
+        return $this;
+    }
+
+
+    
+    
+    /**
+     * @param Closure|null $closure
+     * @param array $options
+     * @return RouteCollection
+     * @throws RouteException
+    */
+    public function api(Closure $closure = null, array $options = []): RouteCollection
+    {
+          if (! $options) {
+              $options = [
+                  static::PREFIX_PATH      => 'api',
+                  static::PREFIX_NAMESPACE =>  'Api\\'
+              ];
+          }
+
+          if (! $closure) {
+              $this->addPrefixes($options);
+              return $this;
+          }
+          
+          return $this->group($closure, $options);
+    }
+
+
+
+    /**
+     * Generate route URL
+     *
+     * @param string $name
+     * @param array $parameters
+     * @return string
+     * @throws \Exception
+    */
+    public function generate(string $name, array $parameters= []): ?string
+    {
+         if (! $this->hasRoute($name)) {
+             return null;
+         }
+
+         /** @var Route $route */
+         $route = $this->getRoute($name);
+
+         return $route->convertParams($parameters);
+    }
+
+
+
+    /**
+     * @param string $name
+     * @param array $params
+     * @return string
+     * @throws \Exception
+    */
+    public function url(string $name, array $params = []): string
+    {
+        return rtrim($this->baseURL, '/') . $this->generate($name, $params);
+    }
+}

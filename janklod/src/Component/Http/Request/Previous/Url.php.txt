@@ -1,0 +1,303 @@
+<?php
+namespace Jan\Component\Http\Request;
+
+
+use Jan\Component\Http\Encoder\UrlEncoder;
+use Jan\Component\Http\Parser\UrlParser;
+
+
+/**
+ * Class Url
+ * @package Jan\Component\Http
+*/
+class Url extends Uri
+{
+
+
+    /**
+     * @var string
+    */
+    protected $target;
+
+
+
+    /**
+     * @var string
+    */
+    protected $baseUrl;
+
+
+
+
+
+    /**
+     * Get scheme
+     *
+     * @var string
+    */
+    protected $scheme;
+
+
+
+
+    /**
+     * Get username
+     *
+     * @var string
+    */
+    protected $username;
+
+
+
+
+    /**
+     * Get password
+     *
+     * @var string
+    */
+    protected $password;
+
+
+
+
+    /**
+     * Get host
+     *
+     * @var string
+     */
+    protected $host;
+
+
+
+
+    /**
+     * Get port
+     *
+     * @var string
+    */
+    protected $port;
+
+
+
+    /**
+     * Url constructor ( scheme://user:pass@host:port/path?query=value#fragment )
+     *
+     * Docs: http://postgres:123456@127.0.0.1:5402/database_name?charset=utf8#anchor;
+     *
+     * @param string $link
+    */
+     public function __construct(string $link)
+     {
+          parent::__construct($link);
+     }
+
+
+     /**
+      * @param string $scheme
+      * @param string $hostName
+      * @param string $requestUri
+      * @return Url
+     */
+     public static function createFactory(string $scheme, string $hostName, string $requestUri): Url
+     {
+         $url = new static($requestUri);
+         $url->setScheme($scheme);
+         $url->setHost($hostName);
+
+         return $url;
+     }
+
+
+
+
+     /**
+      * @param string $scheme
+      * @return Url
+     */
+     public function setScheme(string $scheme): Url
+     {
+         $this->scheme = $scheme;
+
+         return $this;
+     }
+
+
+
+
+    /**
+     * @return string
+    */
+    public function getScheme(): string
+    {
+        return $this->scheme;
+    }
+
+
+
+    /**
+     * @param string $username
+     * @return Url
+    */
+    public function setUser(string $username): Url
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+
+
+    /**
+     * @return string
+    */
+    public function getUser(): string
+    {
+        return $this->username;
+    }
+
+
+
+
+
+
+    /**
+     * @param string $password
+     * @return Url
+    */
+    public function setPassword(string $password): Url
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+
+
+    /**
+     * @return string
+    */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+
+    /**
+     * @param string|null $hostName
+     * @return Url
+    */
+    public function setHost(?string $hostName): Url
+    {
+         $this->host = $hostName;
+         $this->port = null;
+
+         // TODO refactoring code
+         /*
+         https://user:pass@localhost:8000/magazin/products?page=4&price=50
+
+         if (stripos($hostName, '@') !== false) {
+
+             $leftPart  = explode('@', $hostName, 2)[0];
+             $rightPart = explode('@', $hostName, 2)[1];
+
+             if (stripos($leftPart, ':') !== false) {
+                 list($user, $pass) = explode(':', $leftPart, 2);
+                 $this->username = $user;
+                 $this->password = $pass;
+             }
+
+             if (stripos($rightPart, ':') !== false) {
+                 list($host, $port) = explode(':', $rightPart, 2);
+                 $this->host = $host;
+                 $this->port = $port;
+             }
+         }
+
+         */
+
+         if (stripos($hostName, ':') !== false) {
+             $this->host = $hostName;
+             $this->port = explode(':', $hostName, 2)[1];
+         }
+
+         return $this;
+     }
+
+
+
+
+     /**
+      * @return string
+     */
+     public function getHost(): string
+     {
+         /*
+         if ($this->host && $this->port) {
+             return $this->host .':'. $this->port;
+         }
+         */
+
+         return $this->host;
+     }
+
+
+
+     /**
+      * @param string|null $port
+      * @return Url
+     */
+     public function setPort(?string $port): Url
+     {
+         if (! $this->port) {
+             $this->port = $port;
+         }
+
+         return $this;
+     }
+
+
+
+     /**
+      * @return string|null
+     */
+     public function getPort(): ?string
+     {
+        return $this->port;
+     }
+
+
+
+     /**
+      * Initialise path params
+     */
+     protected function initializeParams()
+     {
+        $this->scheme   = $this->parse(PHP_URL_SCHEME);
+        $this->username = $this->parse(PHP_URL_USER);
+        $this->password = $this->parse(PHP_URL_PASS);
+        $this->host     = $this->parse(PHP_URL_HOST);
+        $this->port     = $this->parse(PHP_URL_PORT);
+        parent::initializeParams();
+     }
+
+
+
+     /**
+      * @return string
+     */
+     public function getBaseUrl(): string
+     {
+         $url = sprintf('%s://%s', $this->getScheme(), $this->getHost());
+         return UrlEncoder::decode($url);
+     }
+
+
+
+     /**
+      * @return string
+     */
+     public function getTarget(): string
+     {
+         return sprintf('%s%s', $this->getBaseUrl(), $this->target);
+     }
+}

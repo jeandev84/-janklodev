@@ -1,0 +1,44 @@
+<?php
+namespace Jan\Component\Database\Builder\Expression;
+
+
+use Jan\Component\Database\Builder\SqlExpression;
+
+/**
+ *
+*/
+class Where extends SqlExpression
+{
+
+    protected $conditions = [];
+
+
+
+    /**
+     * @param array $conditions
+    */
+    public function __construct(array $conditions)
+    {
+        $this->conditions = $conditions;
+    }
+
+
+
+    /**
+     * @return string
+    */
+    public function getName(): string
+    {
+        return 'where';
+    }
+
+
+
+    /**
+     * @return string
+     */
+    public function buildSQL(): string
+    {
+        // TODO: Implement buildSQL() method.
+    }
+}

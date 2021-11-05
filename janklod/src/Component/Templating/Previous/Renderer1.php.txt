@@ -1,0 +1,229 @@
+<?php
+namespace Jan\Component\Templating;
+
+
+use Jan\Component\Templating\Contract\RendererInterface;
+use Jan\Component\Templating\Exception\ViewException;
+
+
+/**
+ * Class Renderer
+ * @package Jan\Component\Templating
+ */
+class Renderer implements RendererInterface
+{
+
+    /**
+     * view directory
+     *
+     * @var string
+     */
+    protected $resource;
+
+
+
+    /**
+     * file template
+     *
+     * @var string
+    */
+    protected $template;
+
+
+    /**
+     * layout of view
+     *
+     * @var string
+    */
+    protected $layout;
+
+
+
+
+    /**
+     * view data
+     *
+     * @var array
+    */
+    protected $variables = [];
+
+
+    /**
+     * Renderer constructor.
+     *
+     * @param string|null $resource
+    */
+    public function __construct(string $resource = null)
+    {
+        if($resource) {
+            $this->resource($resource);
+        }
+    }
+
+
+    /**
+     * @param string $resource
+     * @return $this
+    */
+    public function resource(string $resource): Renderer
+    {
+        $this->resource = rtrim($resource, '\\/');
+
+        return $this;
+    }
+
+
+    /**
+     * @param string $layout
+     * @return $this
+    */
+    public function setLayout(string $layout): Renderer
+    {
+        $this->layout = $layout;
+
+        return $this;
+    }
+
+
+
+    /**
+     * @param array $variables
+     * @return $this
+    */
+    public function setVariables(array $variables): Renderer
+    {
+        $this->variables = array_merge($this->variables, $variables);
+
+        return $this;
+    }
+
+
+    /**
+     * @param string $template
+     * @return $this
+    */
+    public function setTemplate(string $template): Renderer
+    {
+        $this->template = $template;
+
+        return $this;
+    }
+
+
+
+
+    /**
+     * Render view template and optional data
+     *
+     * @return false|string
+     * @throws ViewException
+    */
+    public function renderTemplate(): string
+    {
+        extract($this->variables, EXTR_SKIP);
+
+        ob_start();
+        require_once($this->load($this->template));
+        return ob_get_clean();
+    }
+
+
+
+    /**
+     * @return false|string
+     * @throws ViewException
+    */
+    public function renderLayout()
+    {
+         ob_start();
+         require_once($this->load($this->layout));
+         return ob_get_clean();
+    }
+
+
+
+    /**
+     * @throws ViewException
+    */
+    public function renderContent($templateContent)
+    {
+        $layoutContent = $this->renderLayout();
+        return str_replace("{{ content }}", $templateContent, $layoutContent);
+    }
+
+
+
+
+
+    /**
+     * @param $body
+     * @return mixed
+     * @throws ViewException
+    */
+    public function replace($body)
+    {
+         $content = file_get_contents($this->load($this->template));
+
+         /*
+         dd($this->variables);
+         foreach ($this->variables as $key => $value) {
+             $layout = str_replace("{{". $key ."}}", $value, $body);
+         }
+         */
+
+         return str_replace("{{ content }}", $content, $body);
+    }
+
+
+
+
+    /**
+     * Render html template with availables variables
+     *
+     * @param string $template
+     * @param array $variables
+     * @return false|string
+     * @throws ViewException
+    */
+    public function render(string $template, array $variables = []): string
+    {
+        $content = $this->setTemplate($template)->setVariables($variables)
+                                                ->renderTemplate();
+
+        if ($this->layout) {
+            $layout = $this->renderLayout();
+            $content = str_replace("{{ content }}", $content, $layout);
+        }
+
+        return $content;
+    }
+
+
+
+
+    /**
+     * @param string $template
+     * @return string
+     * @throws ViewException
+     */
+    public function load(string $template): string
+    {
+        $templatePath = $this->resource . DIRECTORY_SEPARATOR . $this->resolvePath($template);
+
+        if(! file_exists($templatePath)) {
+            throw new ViewException(sprintf('view file %s does not exist!', $templatePath));
+        }
+
+        return $templatePath;
+    }
+
+
+    /**
+     * @param $path
+     * @return string|string[]
+     */
+    protected function resolvePath($path)
+    {
+        return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, ltrim($path, '\\/'));
+    }
+}

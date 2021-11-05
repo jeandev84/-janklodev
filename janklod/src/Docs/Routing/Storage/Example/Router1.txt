@@ -1,0 +1,62 @@
+<?php
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$router = new \Jan\Component\Routing\Router();
+
+$router->map(['GET'], '/', function () {
+
+})->name('home')->where('id', '\d+')->middleware([
+    'Security\\AuthenticateSuccess'
+]);
+
+$router->map(['GET'], '/about', function () {
+
+}, 'about');
+
+$router->map(['GET'], '/contact', function () {
+
+}, 'contact');
+
+$callback = function () {
+    return "good ...";
+};
+
+$router->map(['POST'], '/contact', $callback, 'send');
+
+$router->map(['GET'], '/foo/{id}', function (\App\Service\Foo $foo, $id) {
+   $foo->show($id);
+}, 'view');
+
+
+$prefixes = [
+    'prefix' => 'admin/',
+    'namespace' => 'Admin\\',
+    'name'      => 'admin.',
+    'middleware' => [\App\Service\Foo::class]
+];
+
+$router->group($prefixes, function ($router) {
+    $router->map(['GET'], '/posts', 'PostController@index', 'post.list');
+    $router->map(['GET'], '/post/{id}', 'PostController@show', 'post.show');
+    $router->map(['GET', 'POST'], '/post', 'PostController@create', 'post.create');
+    $router->map(['GET', 'POST'], '/post/{id}', 'PostController@edit', 'post.edit');
+    $router->map(['GET'], '/post/{id}', 'PostController@delete', 'post.delete');
+});
+
+
+$router->map('GET|POST', '/search/{name}', function () {
+});
+
+
+$router->map('GET', '/club/{name}', function () {
+});
+
+
+$router->map('PUT', '/video/{id}', function () {
+});
+
+$router->map('DELETE', '/video/{id}', function () {
+});
+
+dd($router->getRoutes());

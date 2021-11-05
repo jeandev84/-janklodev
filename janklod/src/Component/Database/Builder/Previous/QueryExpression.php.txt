@@ -1,0 +1,109 @@
+<?php
+namespace Jan\Component\Database\Builder;
+
+
+use Jan\Component\Database\Builder\Contract\SqlExpressionInterface;
+
+/**
+ * SqlExpression
+ *
+ * @package Jan\Component\Database\Builder
+*/
+abstract class QueryExpression implements SqlExpressionInterface
+{
+
+    /**
+     * @var string
+    */
+    protected $alias;
+
+
+    /**
+     * @var string
+    */
+    protected $table;
+
+
+
+    /**
+     * @param string $alias
+    */
+    public function setAlias(string $alias)
+    {
+        $this->alias = $alias;
+    }
+
+
+    /**
+     * @param string $table
+    */
+    public function setTable(string $table)
+    {
+        $this->table = $table;
+    }
+
+
+
+    /**
+     * @param array $fields
+     * @return string
+    */
+    protected function buildSelectedFieldsFromArray(array $fields): string
+    {
+         if ($this->alias) {
+             $c = [];
+             foreach ($fields as $column) {
+                 $c[] = sprintf('`%s`.`%s`', $this->alias, $column);
+             }
+             return implode(', ', $c);
+         }
+
+         return implode(', ', $fields);
+    }
+
+
+
+
+    /**
+     * @param string $fields
+     * @return string
+    */
+    protected function buildSelectedFieldsFromString(string $fields): string
+    {
+         if ($this->alias) {
+             $columns = explode(',', $fields);
+             if ($columns) {
+                 $c = [];
+                 foreach ($columns as $column) {
+                     $c[] = sprintf('`%s`.`%s`', $this->alias, $column);
+                 }
+
+                 return implode(', ', $c);
+             }
+         }
+
+         return $fields;
+    }
+
+
+    /**
+     * @return false
+    */
+    public function isBeginExpression(): bool
+    {
+        return false;
+    }
+
+
+
+    /**
+     * @return string
+    */
+    abstract public function getName(): string;
+
+
+    /**
+     * @return string
+    */
+    abstract public function buildSQL(): string;
+}

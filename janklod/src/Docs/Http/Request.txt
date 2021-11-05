@@ -1,0 +1,68 @@
+<?php
+
+use Jan\Component\Routing\Router;
+
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$router = new Router();
+
+
+$router->get('/', 'HomeController@index')
+       ->name('home');
+
+
+try {
+
+    /*
+    $router->api(function (Router $router) {
+        $router->get('/videos', 'VideoController@index', '');
+        $router->get('/video/{id}', 'VideoController@show')
+            ->whereDigital('id');
+        $router->post('/video', 'VideoController@create')
+            ->whereDigital('id');
+        $router->put('/video/{id}', 'VideoController@edit')
+            ->whereDigital('id');
+        $router->delete('/video/{id}', 'VideoController@delete')
+            ->whereDigital('id');
+    });
+    */
+
+    $options = [
+        'prefix'    => 'admin',
+        'namespace' => 'Admin\\',
+        'name'      => 'admin.'
+    ];
+
+    $router->group(function (Router $router) {
+        $router->resource('video', 'VideoController');
+    }, $options);
+
+} catch (\Jan\Component\Routing\Exception\RouteException $e) {
+}
+
+
+$request = \Jan\Component\Http\Request\Request::createFromGlobals();
+
+dump($request);
+echo $request->cookies->get('MYSITE');
+
+
+$route = $router->match($request->getMethod(), $path = $request->getRequestUri());
+// $route = $router->match($_SERVER['REQUEST_METHOD'], $path = $_SERVER['REQUEST_URI']);
+
+// $request->setMethod('PUT');
+$request = \Jan\Component\Http\Request\RequestContext::create($request);
+dump($request);
+
+dump($request->getBody()->getParams());
+dump($request->getBody()->get('price'));
+
+if (! $route) {
+    dd('Not found route : '. $path);
+}
+
+dump($route);
+dump($router->getResources());
+dump($router->getGroups());
+dd($router->getRoutes());

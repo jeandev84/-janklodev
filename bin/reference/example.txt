@@ -1,0 +1,23 @@
+Availables Commands
+
+default
+test
+salut
+
+app:
+  app:user:change-password
+  app:fill-data
+  app:user-update
+
+make:
+  make:migration
+  make:controller
+  make:command
+
+capsule:
+  capsule:database:create
+  capsule:schema:update
+  capsule:migrations:migrate
+  capsule:migrations:rollback
+  capsule:migrations:reset
+  capsule:migrations:diff

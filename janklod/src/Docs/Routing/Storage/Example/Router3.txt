@@ -1,0 +1,57 @@
+<?php
+
+use Jan\Component\Routing\Router;
+
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$router = new Router();
+
+
+$router->get('/', 'HomeController@index')
+       ->name('home');
+
+$router->get('/foo/{id}', 'PostController@show')
+       ->whereDigital('id')
+       ->name('foo');
+
+$router->any('{controller}/{action}/{params}', '')
+       ->whereWord('controller')
+       ->whereWord('action')
+       ->whereDigital('params')
+;
+
+
+try {
+
+    /*
+    $router->api(function (Router $router) {
+        $router->get('/videos', 'VideoController@index', '');
+        $router->get('/video/{id}', 'VideoController@show')
+            ->whereDigital('id');
+        $router->post('/video', 'VideoController@create')
+            ->whereDigital('id');
+        $router->put('/video/{id}', 'VideoController@edit')
+            ->whereDigital('id');
+        $router->delete('/video/{id}', 'VideoController@delete')
+            ->whereDigital('id');
+    });
+    */
+
+    $router->group(function (Router $router) {
+        $router->resource('video', 'VideoController');
+    }, ['prefix' => 'admin']);
+
+} catch (\Jan\Component\Routing\Exception\RouteException $e) {
+}
+
+
+$route = $router->match($_SERVER['REQUEST_METHOD'], $path = $_SERVER['REQUEST_URI']);
+
+if (! $route) {
+    dd('Not found route : '. $path);
+}
+
+dump($route);
+dump($router->getRouteGroups());
+dd($router->getRoutes());

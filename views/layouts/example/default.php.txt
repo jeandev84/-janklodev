@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <base href="/">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="<?= asset('assets/bootstrap/4.0.0/css/bootstrap.min.css')?>">
+<!--    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">-->
+    <!--    <link rel="stylesheet" href="/assets/bootstrap/fonts/font-awesome.min.css">-->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title><?= env('APP_NAME') ?></title>
+</head>
+<body>
+
+<div class="container">
+    <?php include (__DIR__.'/../partials/_nav.php'); ?>
+
+    {{ content }}
+</div>
+
+</body>
+</html>

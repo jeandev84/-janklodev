@@ -1,0 +1,27 @@
+// $this->app->instance(Foo::class, new Foo());
+/*
+$this->router->get('/welcome', function (Calculator $c) {
+     $c->sum(3, 7);
+     return sprintf('%s', $c->calculate());
+});
+
+
+$this->router->get('/hi', function () {
+    return "Hi!";
+});
+
+$this->router->get('/product', function () {
+    return [
+        "id" => 1,
+        "title" => "watch",
+        "price" => 350
+    ];
+});
+
+$this->router->get('/', 'SiteController@index', 'home');
+$this->router->get('/profile/{id}', 'SiteController@profile')
+             ->whereDigital('id')
+             ->name('profile');
+
+$this->router->get('/', 'SiteController@contact', 'contact');
+*/

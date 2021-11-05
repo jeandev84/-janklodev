@@ -1,0 +1,53 @@
+<?php
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$router = new \Jan\Component\Routing\Router();
+
+
+$router->setURL('http://localhost:8000/');
+
+$router->get( '/', function () {
+
+})->name('home')
+  ->where('id', '\d+')
+  ->middleware([
+    'Security\\AuthenticateSuccess'
+]);
+
+$router->get('/about', function () {
+
+}, 'about');
+
+
+$router->post('/contact', function () {
+});
+
+
+/*
+$router->any('/search/{name}', function () {
+});
+*/
+
+$router->get('/search/{name?}', function () {
+}, 'search')->whereDigital('name');
+
+
+$router->put('/video/{id}', function () {
+});
+
+$router->delete('/video/{id}', function () {
+});
+
+
+dump($router->getRoutes());
+
+
+$route = $router->match($_SERVER['REQUEST_METHOD'], $path = $_SERVER['REQUEST_URI']);
+
+if (! $route) {
+    dd('Route '. $path . ' not found!');
+}
+
+echo $router->generate('search', ['name' => 2]);
+dd($route);

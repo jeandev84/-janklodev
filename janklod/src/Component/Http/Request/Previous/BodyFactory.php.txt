@@ -1,0 +1,36 @@
+<?php
+namespace Jan\Component\Http\Request\Body;
+
+
+use http\Exception\InvalidArgumentException;
+use Jan\Component\Http\Exception\InvalidMethodException;
+use Jan\Component\Http\Request\Request;
+
+
+/**
+ *
+*/
+class BodyFactory
+{
+    /**
+     * @param Request $request
+     * @return array
+     * @throws InvalidMethodException
+     */
+    public static function create(Request $request): array
+    {
+          $method = $request->getMethod();
+
+          switch ($method) {
+              case 'GET':
+               return (new QueryBody($request->queries->all()))->resolve();
+              break;
+
+              case 'POST':
+               return (new RequestBody($request->request->all()))->resolve();
+               break;
+          }
+
+          throw new InvalidMethodException();
+    }
+}

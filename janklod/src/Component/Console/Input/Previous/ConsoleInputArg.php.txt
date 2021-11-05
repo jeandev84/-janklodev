@@ -1,0 +1,80 @@
+<?php
+namespace Jan\Component\Console\Input;
+
+
+use Jan\Component\Console\Input\Contract\InputInterface;
+use Jan\Component\Console\Input\Support\InputArgv;
+
+
+
+/**
+ * Class ConsoleInputArg
+ * @package Jan\Component\Console\Input
+*/
+class ConsoleInputArg extends InputArgv
+{
+
+    /**
+     * @param array $tokens
+    */
+    public function __construct(array $tokens = [])
+    {
+        if (! $tokens) {
+            $tokens = $_SERVER['argv'];
+        }
+
+        parent::__construct($tokens);
+    }
+
+
+    /**
+     * @param array $tokens
+    */
+    public function parses(array $tokens)
+    {
+         $this->firstArgument = array_shift($tokens);
+
+         $token = $tokens[0];
+         $next  = $tokens[1];
+
+         foreach ($tokens as $parse) {
+             if (stripos($token, '-') === false || stripos($token, '--') === false) {
+                 if (preg_match("#^([a-z])=(.*)$#i", $parse, $matches)) {
+                     $this->arguments[$matches[1]] = $matches[2];
+                 }
+             }
+
+         }
+
+
+         echo "FIRST ARGUMENT\n";
+         dump($this->firstArgument);
+
+         echo "ARGUMENTS\n";
+         dump($this->arguments);
+
+         echo "OPTIONS\n";
+         dump($this->options);
+    }
+
+
+
+    /**
+     * @param string $name
+     * @return mixed|string
+    */
+    public function getArgument(string $name)
+    {
+        return $this->arguments[$name] ?? '';
+    }
+
+
+
+    /**
+     * @return mixed
+    */
+    public function getFirstArgument()
+    {
+        return $this->firstArgument;
+    }
+}

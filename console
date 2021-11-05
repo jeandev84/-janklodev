@@ -1,0 +1,33 @@
+#!/usr/bin/env php
+<?php
+
+/*
+|------------------------------------------------------------------
+|   Framework console
+|   Ex: $ php console
+|   Ex: $ php console list
+|   Ex: $ php console --help/-h
+|   Ex: $ php console make:controller -controller=SiteController -action=index,about,news,contact
+|   Ex: $ php console make:controller -controller=Admin\UserController -action=index,about,news,contact
+|   Ex: $ php console make:command app:user:change-password
+|   Ex: $ php console make:model User
+|   Ex: $ php console make:operation -a=1 -b=2 -addition
+|   Ex: $ php console make:resource -entity=Product
+|   Ex: $ php console server:run (run internal server php)
+|------------------------------------------------------------------
+*/
+
+require(__DIR__ . '/vendor/autoload.php');
+$app = require(__DIR__ . '/bootstrap/app.php');
+
+
+$kernel = $app->get(Jan\Contract\Console\Kernel::class);
+
+$status = $kernel->handle(
+ $input = new \Jan\Component\Console\Input\ConsoleInputArg(),
+ new \Jan\Component\Console\Output\ConsoleOutput()
+);
+
+
+$kernel->terminate($input, $status);
+exit($status);

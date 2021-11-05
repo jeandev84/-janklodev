@@ -1,0 +1,206 @@
+<?php
+namespace Jan\Component\Routing;
+
+
+/**
+ * class RouteParam
+ *
+ * @package Jan\Component\Routing
+*/
+class RouteParam
+{
+
+
+    const PX_PATH       = 'prefix';
+    const PX_NAMESPACE  = 'namespace';
+    const PX_MIDDLEWARE = 'middleware';
+    const PX_NAME       = 'name';
+
+
+    /**
+     * @var array
+    */
+    protected $prefixes = [
+        self::PX_PATH => '',
+        self::PX_NAMESPACE => '',
+        self::PX_NAME => '',
+        self::PX_MIDDLEWARE => []
+    ];
+
+
+
+
+    /**
+     * @var array
+    */
+    protected $params = [
+        'methods'    => [],
+        'path'       => '',
+        'callback'   => '',
+        'name'       => '',
+        'patterns'   => [],
+        'middleware' => [],
+        'options'    => []
+    ];
+
+
+
+    /**
+     * @param array $params
+    */
+    public function __construct(array $params = [])
+    {
+        if ($params) {
+            $this->add($params);
+        }
+    }
+
+
+
+
+    /**
+     * @param array $items
+    */
+    public function add(array $items)
+    {
+        $params = [
+            'methods'    => $this->prepareRouteMethod($items['methods']),
+            'path'       => $this->prepareRoutePath($items['path']),
+            'callback'   => $this->prepareRouteCallback($items['callback']),
+            'name'       => $items['name'],
+            'patterns'   => $items['patterns'],
+            'middleware' => $items['middlewares'],
+            'options'    => $items['options']
+        ];
+
+        $this->params = $params;
+    }
+
+
+
+
+    /**
+     * @param array $prefixes
+    */
+    public function addPrefixes(array $prefixes)
+    {
+        $this->prefixes = array_merge($this->prefixes, $prefixes);
+    }
+
+
+
+
+
+    /**
+     * @param string $name
+     * @param null $default
+     * @return mixed|null
+     */
+    public function getPrefixValue(string $name, $default = null)
+    {
+        return $this->prefixes[$name] ?? $default;
+    }
+
+
+
+    /**
+     * Remove prefixes
+    */
+    public function removePrefixes()
+    {
+        $this->prefixes = [];
+    }
+
+
+
+    /**
+     * @param $key
+    */
+    public function removePrefix($key)
+    {
+        unset($this->prefixes[$key]);
+    }
+
+
+
+
+    /**
+     * @param $key
+     * @param null $default
+     * @return mixed|null
+    */
+    public function get($key, $default = null)
+    {
+        return $this->params[$key] ?? $default;
+    }
+
+
+
+    /**
+     * @param $methods
+     * @return array
+     */
+    protected function prepareRouteMethod($methods): array
+    {
+        if (\is_string($methods)) {
+            $methods = explode('|', $methods);
+        }
+
+        return (array) $methods;
+    }
+
+
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    public function prepareRoutePath(string $path): string
+    {
+        if ($prefix = $this->getPrefixValue(static::PX_PATH)) {
+            $path = trim($prefix, '/'). '/' . ltrim($path, '/');
+        }
+
+        return $path;
+    }
+
+
+
+    /**
+     * @param $callback
+     * @return mixed
+    */
+    protected function prepareRouteCallback($callback)
+    {
+        $namespace = $this->getPrefixValue(self::PX_NAMESPACE);
+
+        if (\is_string($callback) && $namespace) {
+            $callback = rtrim($namespace, '\\') . '\\'. $callback;
+        }
+
+        return $callback;
+    }
+
+
+
+    /**
+     * @return mixed
+     */
+    protected function getGroupMiddlewares()
+    {
+        return $this->getPrefixValue(static::PX_MIDDLEWARE, []);
+    }
+
+
+
+    /**
+     * @return array
+    */
+    protected function getDefaultOptions(): array
+    {
+        return [
+            self::PX_PATH      => $this->getPrefixValue(self::PX_PATH),
+            self::PX_NAMESPACE => $this->getPrefixValue(self::PX_NAMESPACE),
+        ];
+    }
+}

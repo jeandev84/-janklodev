@@ -1,0 +1,55 @@
+<?php
+namespace Jan\Component\Routing\Matcher;
+
+use Jan\Component\Http\Request\Request;
+use Jan\Component\Routing\Route;
+
+/**
+ *
+*/
+class UrlMatcher
+{
+
+    protected $route;
+
+    protected $requestContext;
+
+
+    public function __construct(Route $route, Request $requestContext)
+    {
+        $this->route = $route;
+        $this->requestContext = $requestContext;
+    }
+
+
+
+    public function match($pattern)
+    {
+        if (preg_match($pattern, $uri = $this->requestContext->getRequestUri(), $matches)) {
+
+            $this->route->setMatches($this->filterMatchedParams($matches));
+
+            $this->route->addOptions(compact('pattern', 'uri'));
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+
+    /**
+     * @param array $matches
+     * @return array
+     */
+    protected function filterMatchedParams(array $matches): array
+    {
+        return array_filter($matches, function ($key) {
+
+            return ! is_numeric($key);
+
+        }, ARRAY_FILTER_USE_KEY);
+    }
+}

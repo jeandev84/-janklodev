@@ -1,0 +1,88 @@
+<?php
+namespace Jan\Component\Console\Input;
+
+
+use Jan\Component\Console\Input\Contract\InputInterface;
+use Jan\Component\Console\Input\Support\InputArgv;
+
+
+
+/**
+ * Class ConsoleInputArg
+ * @package Jan\Component\Console\Input
+*/
+class ConsoleInputArg extends InputArgv
+{
+
+
+    protected $flags = [];
+    protected $commands = [];
+
+
+    /**
+     * @param array $tokens
+    */
+    public function __construct(array $tokens = [])
+    {
+        if (! $tokens) {
+            $tokens = $_SERVER['argv'];
+        }
+
+        parent::__construct($tokens);
+    }
+
+
+    /**
+     * @param array $tokens
+    */
+    public function parses(array $tokens)
+    {
+         $this->firstArgument = array_shift($tokens);
+
+         foreach ($tokens as $parsed) {
+              if (stripos($parsed, '=') !== false) {
+                  if(substr($parsed, 0, 1) == '-') {
+                      $parsed = substr($parsed, 1, strlen($parsed));
+                      list($name, $value) = explode('=', $parsed);
+                      $this->arguments[$name] = $value;
+                  }elseif(substr($parsed, 0, 2) == '--') {
+                      $parsed = substr($parsed, 2, strlen($parsed));
+                      dd('OK');
+                      list($name, $value) = explode('=', $parsed);
+                      $this->options[$name] = $value;
+                  }
+              }
+
+         }
+
+         echo "FIRST ARGUMENT\n";
+         dump($this->firstArgument);
+
+         echo "ARGUMENTS\n";
+         dump($this->arguments);
+
+         echo "OPTIONS\n";
+         dump($this->options);
+    }
+
+
+
+    /**
+     * @param string $name
+     * @return mixed|string
+    */
+    public function getArgument(string $name)
+    {
+        return $this->arguments[$name] ?? '';
+    }
+
+
+
+    /**
+     * @return mixed
+    */
+    public function getFirstArgument()
+    {
+        return $this->firstArgument;
+    }
+}

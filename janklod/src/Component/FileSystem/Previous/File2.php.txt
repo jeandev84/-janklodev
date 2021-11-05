@@ -1,0 +1,64 @@
+<?php
+namespace Jan\Component\FileSystem;
+
+/**
+ * class File
+ *
+ * @package Jan\Component\FileSystem
+*/
+class File
+{
+
+     /**
+      * @var string
+     */
+     protected $path;
+
+
+
+     /**
+      * @var array
+     */
+     protected $infos = [];
+
+
+
+     /**
+      * @var array
+     */
+     protected $data = [];
+
+
+
+     /**
+      * @param string $path
+     */
+     public function __construct(string $path)
+     {
+          $this->path  = $path;
+          $this->infos = pathinfo($path);
+          $this->data  = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+     }
+
+
+
+     /**
+      * @param string $key
+      * @param null $default
+      * @return mixed|string|null
+     */
+     public function info(string $key, $default = null)
+     {
+         return $this->infos[$key] ?? $default;
+     }
+
+
+
+     /**
+       * @return array|false
+     */
+     public function toArray()
+     {
+         return $this->data;
+     }
+}

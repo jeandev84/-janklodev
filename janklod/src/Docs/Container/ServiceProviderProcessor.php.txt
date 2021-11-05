@@ -1,0 +1,33 @@
+<?php
+namespace Jan\Component\Container\ServiceProvider;
+
+
+use Jan\Component\Container\ServiceProvider\Contract\BootableServiceProvider;
+
+/**
+ * class ServiceProviderProcessor
+ *
+ * @package Jan\Component\Container\ServiceProvider
+*/
+class ServiceProviderProcessor
+{
+
+     /**
+      * @param ServiceProvider $provider
+      * @return ServiceProvider
+     */
+     public function run(ServiceProvider $provider): ServiceProvider
+     {
+         $implements = class_implements($provider);
+
+         if (isset($implements[BootableServiceProvider::class])) {
+             if (method_exists($provider, 'boot')) {
+                 $provider->boot();
+             }
+         }
+
+         $provider->register();
+
+         return $provider;
+     }
+}

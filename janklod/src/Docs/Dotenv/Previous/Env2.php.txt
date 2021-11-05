@@ -1,0 +1,54 @@
+<?php
+namespace Jan\Component\Dotenv;
+
+
+/**
+ * class Env
+ *
+ * @package Jan\Component\Dotenv
+*/
+class Env
+{
+
+     /**
+      * @param string $environ
+     */
+     public function put(string $environ)
+     {
+          if($environ = $this->validateEnviron($environ)) {
+             putenv($environ);
+             list($index, $value) = explode("=", $environ, 2);
+             $_ENV[$index] = $value;
+          }
+     }
+
+
+
+     /**
+      * @param string $key
+      * @return array|false|mixed|string
+     */
+     public function read(string $key)
+     {
+         if (isset($_ENV[$key])) {
+             return $_ENV[$key];
+         }
+
+         return getenv($key);
+     }
+
+
+
+     /**
+      * @param string $env
+      * @return false|string
+     */
+     protected function validateEnviron(string $env)
+     {
+         if(preg_match('#^(?=[A-Z])(.*)=(?=[a-zA-Z0-9])(.*)$#', $env, $matches)) {
+             return trim($matches[0]);
+         }
+
+         return false;
+     }
+}

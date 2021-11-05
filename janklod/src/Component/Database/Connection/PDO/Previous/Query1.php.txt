@@ -1,0 +1,455 @@
+<?php
+namespace Jan\Component\Database\Connection\PDO;
+
+
+use Exception;
+use Jan\Component\Database\Connection\Contract\QueryInterface;
+use Jan\Component\Database\Connection\Exception\QueryException;
+use Jan\Component\Database\Contract\ObjectManagerInterface;
+use PDO;
+use PDOException;
+use PDOStatement;
+
+
+
+/**
+ * Class Query
+ *
+ * @package Jan\Component\Database\Connection\PDO
+*/
+class Query implements QueryInterface
+{
+
+
+       /**
+        * @var PDO
+       */
+       protected $pdo;
+
+
+
+
+       /**
+        * @var PDOStatement
+       */
+       protected $statement;
+
+
+
+
+       /**
+        * @var string
+       */
+       protected $sql;
+
+
+
+
+       /**
+        * @var array
+       */
+       protected $params;
+
+
+
+
+       /**
+        * @var int
+       */
+       protected $fetchMode = PDO::FETCH_OBJ;
+
+
+
+
+
+
+       /**
+         * @var string
+       */
+       protected $entityClass;
+
+
+
+
+
+       /**
+        * @var array
+       */
+       protected $bindValues = [];
+
+
+
+       /**
+        * @var array
+       */
+       protected $results = [];
+
+
+
+       /**
+        * @var mixed
+       */
+       protected $result;
+
+
+
+       /**
+        * @var ObjectManagerInterface
+       */
+       protected $om;
+
+
+
+
+       /**
+        * @var array
+       */
+       protected $cache = [];
+
+
+
+
+       /**
+         * @param PDO $pdo
+       */
+       public function __construct(PDO $pdo)
+       {
+            $this->pdo = $pdo;
+       }
+
+
+
+
+
+       /**
+        * @param string $sql
+        * @return $this
+       */
+       public function query(string $sql): Query
+       {
+           $this->sql = $sql;
+
+           return $this;
+       }
+
+
+
+
+       /**
+        * @param array $params
+        * @return Query
+       */
+       public function params(array $params): Query
+       {
+           $this->params = $params;
+
+           return $this;
+       }
+
+
+
+
+       /**
+         * @param int $fetchMode
+         * @return $this
+       */
+       public function fetchMode(int $fetchMode): Query
+       {
+           $this->fetchMode = $fetchMode;
+
+           return $this;
+       }
+
+
+
+
+
+       /**
+         * @param string|null $entityClass
+         * @return $this
+       */
+       public function metaClass(string $entityClass): Query
+       {
+            $this->entityClass = $entityClass;
+
+            return $this;
+       }
+
+
+
+       /**
+         * @param string $param
+         * @param $value
+         * @param int $type
+         * @return $this
+       */
+       public function bindValue(string $param, $value, int $type = 0): Query
+       {
+            $this->bindValues[] = [$param, $value, $type];
+
+            return $this;
+       }
+
+
+
+
+       /**
+        * @throws Exception
+        *
+        * @return void
+       */
+       public function execute()
+       {
+           try {
+
+               $this->statement = $this->pdo->prepare($this->sql);
+
+               if ($this->bindValues) {
+                   $this->executeBindValues($this->statement);
+               }else{
+                   $this->executeParams($this->statement);
+               }
+
+           } catch (PDOException $e) {
+
+                throw new QueryException($e->getMessage());
+           }
+       }
+
+
+
+
+
+       /**
+        * @param PDOStatement $statement
+        * @return void
+       */
+       public function executeBindValues(PDOStatement $statement)
+       {
+            $params = [];
+
+            foreach ($this->bindValues as $bindParams) {
+                list($param, $value, $type) = $bindParams;
+                $statement->bindValue($param, $value, $type);
+                $params[$param] = $value;
+            }
+
+            if ($statement->execute()) {
+                 $this->addToCache($this->sql, $params);
+            }
+       }
+
+
+       /**
+        * @param PDOStatement $statement
+        * @return void
+       */
+       public function executeParams(PDOStatement $statement)
+       {
+            if ($statement->execute($this->params)) {
+                 $this->addToCache($this->sql, $this->params);
+            }
+       }
+
+
+       /**
+         * @return array|false
+         * @throws Exception
+        */
+       public function getArrayResult()
+       {
+            $this->execute();
+
+            return $this->statement->fetchAll();
+       }
+
+
+
+        /**
+         * @return array|false
+         * @throws Exception
+        */
+        public function getArrayAssoc()
+        {
+            $this->execute();
+
+            return $this->statement->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+
+         /**
+          * @throws Exception
+         */
+         public function getArrayColumns()
+         {
+             $this->execute();
+
+             return $this->statement->fetchAll(PDO::FETCH_COLUMN);
+         }
+
+
+
+
+
+        /**
+         * @return array
+         * @throws Exception
+        */
+        public function getResult(): array
+        {
+            $this->execute();
+
+            return $this->results = $this->fetchResults($this->statement);
+        }
+
+
+
+
+        /**
+         * @return mixed
+         * @throws Exception
+        */
+        public function getFirstResult()
+        {
+            $result = $this->getResult();
+
+            return $result[0] ?? null;
+        }
+
+
+
+        /**
+          * @return mixed
+          * @throws Exception
+        */
+        public function getOneOrNullResult()
+        {
+            $this->execute();
+
+            return $this->result  = $this->fetchResult($this->statement);
+        }
+
+
+
+
+        /**
+         * @param ObjectManagerInterface $om
+        */
+        public function setObjectManager(ObjectManagerInterface $om)
+        {
+              $this->om = $om;
+        }
+
+
+
+        /**
+         * @return ObjectManagerInterface
+        */
+        public function getObjectManager(): ObjectManagerInterface
+        {
+            return $this->om;
+        }
+
+
+
+
+        /**
+         * @param PDOStatement $statement
+         * @return array|mixed
+        */
+        protected function fetchResult(PDOStatement $statement)
+        {
+            if($this->entityClass) {
+                $statement->setFetchMode(PDO::FETCH_CLASS, $this->entityClass);
+                return  $this->resultMapping($statement->fetch());
+            }
+
+            return $this->resultMapping($statement->fetch($this->fetchMode));
+        }
+
+
+
+
+
+        /**
+         * @param PDOStatement $statement
+         * @return array
+        */
+        protected function fetchResults(PDOStatement $statement): array
+        {
+            if ($this->entityClass) {
+                $objects = $statement->fetchAll(PDO::FETCH_CLASS, $this->entityClass);
+                return $this->resultsMapping($objects);
+            }
+
+            return $this->resultsMapping($statement->fetchAll($this->fetchMode));
+        }
+
+
+
+        /**
+         * @param object $object
+         * @return mixed
+        */
+        protected function resultMapping(object $object)
+        {
+           if ($this->om instanceof ObjectManagerInterface) {
+               $this->om->persist($object);
+           }
+
+           return $object;
+        }
+
+
+
+        /**
+         * @param array $contexts
+         * @return array
+        */
+        protected function resultsMapping(array $contexts): array
+        {
+            $collections = [];
+
+            foreach ($contexts as $object) {
+                $collections[] = $this->resultMapping($object);
+            }
+
+            if($collections) {
+                return $collections;
+            }
+
+            return $contexts;
+        }
+
+
+
+        /**
+          * @param string $sql
+          * @param array $params
+        */
+        public function addToCache(string $sql, array $params)
+        {
+            $this->cache[$sql] = $params;
+        }
+
+
+
+
+       /**
+        * @return string
+       */
+       public function log(): string
+       {
+           /*
+           $sql    = array_keys($this->queryLogs);
+           $params = array_values($this->queryLogs);
+
+           $message  = sprintf('executed queries : %s', implode("\n", $sql));
+           $message .= sprintf('with params : %s', implode(',', implode("\n", $params)));
+
+           return $message;
+           */
+
+           return "";
+       }
+}

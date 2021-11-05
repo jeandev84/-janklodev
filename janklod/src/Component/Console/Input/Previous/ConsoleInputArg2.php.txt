@@ -1,0 +1,127 @@
+<?php
+namespace Jan\Component\Console\Input;
+
+
+use Jan\Component\Console\Input\Contract\InputInterface;
+use Jan\Component\Console\Input\Support\InputArgv;
+
+
+
+/**
+ * Class ConsoleInputArg
+ * @package Jan\Component\Console\Input
+*/
+class ConsoleInputArg extends InputArgv
+{
+
+
+    protected $flags = [];
+    protected $commands = [];
+
+
+    /**
+     * @param array $tokens
+    */
+    public function __construct(array $tokens = [])
+    {
+        if (! $tokens) {
+            $tokens = $_SERVER['argv'];
+        }
+
+        parent::__construct($tokens);
+    }
+
+
+    /**
+     * @param array $tokens
+    */
+    public function parses(array $tokens)
+    {
+         $this->firstArgument = array_shift($tokens);
+
+         $endOfOptions = false;
+
+         while ($token = array_shift($tokens))
+         {
+              if ($endOfOptions) {
+                  $this->arguments[] = $token;
+                  continue;
+              }
+
+              if (substr($token, 0, 2) === '--')
+              {
+                  if (! isset($token[3]))
+                  {
+                      $endOfOptions = true;
+                      continue;
+                  }
+
+
+                  $value = "";
+                  $com = substr($token, 2);
+
+                  if (strpos($com, '=')) {
+                      list($com, $value) = explode("=", $com, 2);
+                  }elseif (strpos($token[0], '-') !== 0) {
+
+                      while (strpos($token[0], '-') !== 0) {
+                          $value .= array_shift($token).' ';
+                          $value  = rtrim($value, ' ');
+                      }
+
+
+                      $this->options[$com] = ! empty($value) ? $value : true;
+                      continue;
+                  }
+
+                  if (substr($token, 0, 1) === '-') {
+                      for ($i = 1; isset($token[$i]); $i++) {
+                          $this->flags[] = $token[$i];
+                          continue;
+                      }
+                  }
+
+
+                  $this->commands[] = $token;
+              }
+
+
+              if (! count($this->options) && ! count($this->flags)) {
+                  $this->arguments[] = array_merge($this->commands, $this->arguments);
+                  $this->commands = [];
+              }
+         }
+
+
+         dd($this->arguments, $this->options);
+         echo "FIRST ARGUMENT\n";
+         dump($this->firstArgument);
+
+         echo "ARGUMENTS\n";
+         dump($this->arguments);
+
+         echo "OPTIONS\n";
+         dump($this->options);
+    }
+
+
+
+    /**
+     * @param string $name
+     * @return mixed|string
+    */
+    public function getArgument(string $name)
+    {
+        return $this->arguments[$name] ?? '';
+    }
+
+
+
+    /**
+     * @return mixed
+    */
+    public function getFirstArgument()
+    {
+        return $this->firstArgument;
+    }
+}

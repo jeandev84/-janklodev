@@ -1,0 +1,107 @@
+<?php
+
+use Jan\Component\Routing\Router;
+
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$router = new Router();
+
+
+$router->get('/', 'HomeController@index')
+       ->name('home');
+
+$router->post('/', function () {
+    return "form";
+})->name('register');
+
+
+try {
+
+    /*
+    $router->api(function (Router $router) {
+        $router->get('/videos', 'VideoController@index', '');
+        $router->get('/video/{id}', 'VideoController@show')
+            ->whereDigital('id');
+        $router->post('/video', 'VideoController@create')
+            ->whereDigital('id');
+        $router->put('/video/{id}', 'VideoController@edit')
+            ->whereDigital('id');
+        $router->delete('/video/{id}', 'VideoController@delete')
+            ->whereDigital('id');
+    });
+    */
+
+    $options = [
+        'prefix'    => 'admin',
+        'namespace' => 'Admin\\',
+        'name'      => 'admin.'
+    ];
+
+    $router->group(function (Router $router) {
+        $router->resourceAPI('video', 'VideoController');
+        $router->resourceAPI('post', 'PostController');
+        $router->resourceWeb('news', 'NewController');
+    }, $options);
+
+} catch (\Jan\Component\Routing\Exception\RouteException $e) {
+}
+
+/*
+setcookie('work', 'Developer');
+setcookie('work', 'Developer', time() -1);
+dd($_COOKIE);
+dd($router->getResources());
+*/
+
+dump($router->getResources());
+
+$request = \Jan\Component\Http\Request\Request::createFromGlobals();
+
+/*
+dump($request);
+echo $request->cookies->get('MYSITE');
+*/
+
+$route = $router->match($request->getMethod(), $path = $request->getUri()->getPath());
+// $route = $router->match($_SERVER['REQUEST_METHOD'], $path = $_SERVER['REQUEST_URI']);
+
+// $request->setMethod('PUT');
+$request = \Jan\Component\Http\Request\RequestContext::create($request);
+
+/*
+dump($request->getBody()->toArray());
+dump($request->getBody()->toJson());
+dump($request->getBody()->get('price'));
+*/
+
+if (! $route) {
+    dd('Not found route : '. $path);
+}
+
+dump($request);
+dump($route);
+/*
+dump($router->getResources());
+dump($router->getGroups());
+dump($router->getRoutes());
+*/
+
+dump($request->request->all());
+//dump($request->getBodyContent());
+dump($request->getBody()->toArray());
+?>
+
+<form action="" method="post">
+    <div>
+        <input type="email" name="email" placeholder="Email" value="jeanyao@ymail.com">
+    </div>
+    <div>
+        <input type="password" name="password" placeholder="Password" value="123">
+    </div>
+    <div>
+        <input type="text" name="surname" placeholder="Surname" value="Yao">
+    </div>
+    <input type="hidden" name="_method" value="DELETE">
+    <button type="submit">Send</button>
+</form>

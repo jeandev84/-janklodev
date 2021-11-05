@@ -1,0 +1,176 @@
+<?php
+namespace Jan\Foundation;
+
+
+use Jan\Component\Container\Container;
+use Jan\Component\Http\Middleware\Middleware;
+use Jan\Component\Http\Request\Request;
+use Jan\Component\Http\Response\JsonResponse;
+use Jan\Component\Http\Response\Response;
+use Jan\Component\Routing\Exception\NotFoundRouteException;
+use Jan\Component\Routing\Route;
+use Jan\Component\Routing\Router;
+use ReflectionException;
+
+
+/**
+ * Class Pipeline
+ *
+ * @package Jan\Foundation
+*/
+class Pipeline
+{
+
+    /**
+     * Container DI
+     *
+     * @var Container
+    */
+    protected $app;
+
+
+
+    /**
+     * Middleware manager
+     *
+     * @var Middleware
+    */
+    protected $middleware;
+
+
+
+
+    /**
+     * middlewares
+     *
+     * @var array
+     */
+    protected $middlewares = [];
+
+
+
+
+    /**
+     * Router of application
+     *
+     * @var Router
+     */
+    protected $router;
+
+
+
+
+    /**
+     * @var string
+    */
+    protected $namespace = 'App\\Http\\Controller';
+
+
+
+
+
+    /**
+     * Pipeline constructor.
+     *
+     * @param Container $app
+     * @param Router $router
+     * @param Middleware $middleware
+    */
+    public function __construct(Container $app, Router $router, Middleware $middleware)
+    {
+        $this->app    = $app;
+        $this->router = $router;
+        $this->middleware = $middleware;
+    }
+
+
+
+    /**
+     * @param array $middlewares
+     * @return $this
+    */
+    public function middlewares(array $middlewares): Pipeline
+    {
+        $this->middlewares = $middlewares;
+
+        return $this;
+    }
+
+
+
+    /**
+     * @param Request $request
+     * @return Response
+     * @throws \Exception
+    */
+    public function dispatchRoute(Request $request): Response
+    {
+        if (! $this->router->getRoutes()) {
+            if($route = $this->router->getDefaultRoute()) {
+                return $this->callAction($route->getCallback());
+            }
+        }
+
+        $route  = $this->router->match($request->getMethod(), $path = $request->getUri()->getPath());
+
+        if (! $route instanceof Route) {
+            throw new NotFoundRouteException(sprintf('Route (%s) not found.', $path), 404);
+        }
+
+        $request->setAttributes([
+            '_routeName'    => $route->getName(),
+            '_routeHandler' => $route->getCallback(),
+            '_routeParams'  => $route->getMatches()
+        ]);
+
+
+        /* $request->request->remove('_method'); // TODO it work but best pratice to remove this from from */
+
+        $this->app->instance('_currentRoute', $route);
+
+        // run routes middlewares
+
+
+        // get response
+        return $this->callAction($route->getCallback(), $route->getMatches());
+    }
+
+
+
+    /**
+     * @param $callback
+     * @param array $params
+     * @return Response
+     * @throws ReflectionException
+    */
+    protected function callAction($callback, array $params = []): Response
+    {
+        if (\is_string($callback) && stripos($callback, '@') !== false) {
+            list($controller, $action) = explode('@', $callback, 2);
+            $response = $this->app->call($controller, $params, $action);
+        }else{
+            $response = $this->app->call($callback, $params);
+        }
+
+        return $this->resolveResponse($response);
+    }
+
+
+
+    /**
+     * @param mixed|null $response
+     * @return Response
+    */
+    protected function resolveResponse($response = null): Response
+    {
+        if ($response instanceof Response) {
+            return $response;
+        }
+
+        if(\is_array($response)) {
+            return new JsonResponse($response);
+        }
+
+        return new Response($response, 200);
+    }
+}
