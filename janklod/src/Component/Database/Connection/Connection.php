@@ -73,8 +73,6 @@ abstract class Connection implements ConnectionInterface
 
 
 
-
-
     /**
      * @param $driver
     */
@@ -143,10 +141,9 @@ abstract class Connection implements ConnectionInterface
     /**
      * @param string $sql
      * @param array $params
-     * @param array $options
      * @return QueryInterface
     */
-    abstract public function query(string $sql, array $params = [], array $options = []): QueryInterface;
+    abstract public function query(string $sql, array $params = []): QueryInterface;
 
 
 

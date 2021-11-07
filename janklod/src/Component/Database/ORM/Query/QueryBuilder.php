@@ -3,6 +3,8 @@ namespace Jan\Component\Database\ORM\Query;
 
 use Jan\Component\Database\Builder\Support\SqlQueryBuilder;
 use Jan\Component\Database\Connection\Connection;
+use Jan\Component\Database\Connection\PDO\PdoQuery;
+use Jan\Component\Database\Connection\Query;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
 use Jan\Component\Database\ORM\EntityManager;
 
@@ -34,7 +36,7 @@ class QueryBuilder extends SqlQueryBuilder
       /**
        * @var array
       */
-      protected $options = [];
+      protected $queryOptions = [];
 
 
 
@@ -50,9 +52,9 @@ class QueryBuilder extends SqlQueryBuilder
 
 
       /**
-       * @param EntityManager $em
+       * @param EntityManagerInterface $em
       */
-      public function setEntityManager(EntityManager $em)
+      public function setEntityManager(EntityManagerInterface $em)
       {
           $this->em = $em;
       }
@@ -60,11 +62,11 @@ class QueryBuilder extends SqlQueryBuilder
 
 
       /**
-       * @param array $options
+       * @param array $queryOptions
       */
-      public function setOptions(array $options)
+      public function setQueryOptions(array $queryOptions)
       {
-          $this->options = $options;
+          $this->queryOptions = $queryOptions;
       }
 
 
@@ -74,9 +76,9 @@ class QueryBuilder extends SqlQueryBuilder
        * @param $key
        * @param $value
       */
-      public function setOption($key, $value)
+      public function setQueryOption($key, $value)
       {
-          $this->options[$key] = $value;
+          $this->queryOptions[$key] = $value;
       }
 
 
@@ -84,29 +86,31 @@ class QueryBuilder extends SqlQueryBuilder
       /**
        * @return array
       */
-      public function getOptions(): array
+      public function getQueryOptions(): array
       {
-          return $this->options;
+          return $this->queryOptions;
       }
 
 
 
       /**
-       * @return QueryResult
+       * @return Query
        * @throws \Exception
       */
-      public function getQuery(): QueryResult
+      public function getQuery(): Query
       {
           $query = $this->connection->query(
               $this->getSQL(),
-              $this->getParameters(),
-              $this->getOptions()
+              $this->getParameters()
           );
 
-          $result = new QueryResult($query);
-          $result->setEntityManager($this->em);
+          if ($query instanceof PdoQuery) {
+              $query->entityClass($this->em->getClassMap());
+          }
 
-          return $result;
+          $this->prepareQueryToPersistence($query);
+
+          return $query;
       }
 
 
@@ -149,4 +153,40 @@ class QueryBuilder extends SqlQueryBuilder
 
          return $context;
      }
+
+
+
+
+     /**
+      * @param Query $query
+     */
+     protected function prepareQueryToPersistence(Query $query)
+     {
+         $this->prepareToPersistResults($query->getResult());
+         $this->prepareToPersistResult($query->getOneOrNullResult());
+     }
+
+
+
+     /**
+      * @param $result
+     */
+     protected function prepareToPersistResult($result)
+     {
+         if (is_object($result)) {
+             $this->em->persist($result);
+         }
+     }
+
+
+
+    /**
+     * @param array $results
+    */
+    protected function prepareToPersistResults(array $results)
+    {
+        foreach ($results as $result) {
+            $this->prepareToPersistResult($result);
+        }
+    }
 }

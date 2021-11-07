@@ -3,8 +3,8 @@ namespace Jan\Component\Database\Connection\PDO;
 
 
 use Exception;
-use Jan\Component\Database\Connection\Contract\QueryInterface;
 use Jan\Component\Database\Connection\Exception\QueryException;
+use Jan\Component\Database\Connection\Query;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -12,11 +12,11 @@ use PDOStatement;
 
 
 /**
- * Class Query
+ * Class PdoQuery
  *
  * @package Jan\Component\Database\Connection\PDO
 */
-class Query implements QueryInterface
+class PdoQuery extends Query
 {
 
 
@@ -36,21 +36,6 @@ class Query implements QueryInterface
 
 
 
-       /**
-        * @var string
-       */
-       protected $sql;
-
-
-
-
-       /**
-        * @var array
-       */
-       protected $params;
-
-
-
 
        /**
         * @var int
@@ -60,12 +45,10 @@ class Query implements QueryInterface
 
 
 
-
-
        /**
          * @var string
        */
-       protected $entityClass;
+       protected $entityClass = \stdClass::class;
 
 
 
@@ -76,6 +59,19 @@ class Query implements QueryInterface
        */
        protected $bindValues = [];
 
+
+
+       /**
+        * @var array
+       */
+       protected $results = [];
+
+
+
+       /**
+        * @var mixed
+       */
+       protected $result;
 
 
 
@@ -98,40 +94,11 @@ class Query implements QueryInterface
 
 
 
-
-       /**
-        * @param string $sql
-        * @return $this
-       */
-       public function query(string $sql): Query
-       {
-           $this->sql = $sql;
-
-           return $this;
-       }
-
-
-
-
-       /**
-        * @param array $params
-        * @return Query
-       */
-       public function params(array $params): Query
-       {
-           $this->params = $params;
-
-           return $this;
-       }
-
-
-
-
        /**
          * @param int $fetchMode
          * @return $this
        */
-       public function fetchMode(int $fetchMode): Query
+       public function fetchMode(int $fetchMode): PdoQuery
        {
            $this->fetchMode = $fetchMode;
 
@@ -146,7 +113,7 @@ class Query implements QueryInterface
          * @param string|null $entityClass
          * @return $this
        */
-       public function metaClass(string $entityClass): Query
+       public function entityClass(string $entityClass): PdoQuery
        {
             $this->entityClass = $entityClass;
 
@@ -161,7 +128,7 @@ class Query implements QueryInterface
          * @param int $type
          * @return $this
        */
-       public function bindValue(string $param, $value, int $type = 0): Query
+       public function bindValue(string $param, $value, int $type = 0): PdoQuery
        {
             $this->bindValues[] = [$param, $value, $type];
 
@@ -200,6 +167,10 @@ class Query implements QueryInterface
                    }
                }
 
+               //$this->results = $this->fetchAll($this->fetchMode);
+               // $this->result  = $this->fetch($this->fetchMode);
+
+
            } catch (PDOException $e) {
 
                 throw new QueryException($e->getMessage());
@@ -209,15 +180,17 @@ class Query implements QueryInterface
 
 
        /**
-         * @return array|false
-         * @throws Exception
+         * @return array
+        * @throws Exception
        */
-       public function getArrayResult()
+       public function getArrayResult(): array
        {
-            $this->execute();
+           $this->execute();
 
-            return $this->statement->fetchAll();
+           return $this->statement->fetchAll(PDO::FETCH_ASSOC);
        }
+
+
 
 
 
@@ -231,6 +204,8 @@ class Query implements QueryInterface
 
             return $this->statement->fetchAll(PDO::FETCH_ASSOC);
         }
+
+
 
 
          /**
@@ -288,12 +263,14 @@ class Query implements QueryInterface
             $this->execute();
 
             if($this->entityClass) {
-                $this->statement->setFetchMode(PDO::FETCH_CLASS, $this->entityClass);
-                return $this->statement->fetch();
+                return $this->statement->fetchObject($this->entityClass);
             }
 
             return $this->statement->fetch($this->fetchMode);
         }
+
+
+
 
 
         /**

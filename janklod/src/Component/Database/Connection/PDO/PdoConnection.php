@@ -28,6 +28,14 @@ class PdoConnection extends Connection
 
 
     /**
+     * @var string
+    */
+    protected $entityClass = \stdClass::class;
+
+
+
+
+    /**
      * @param Configuration|null $config
     */
     public function __construct(Configuration $config = null)
@@ -47,7 +55,11 @@ class PdoConnection extends Connection
     {
         if (! $this->connected()) {
 
-            $connection = $this->config['connection'];
+            $connection = $this->config->getTypeConnection();
+
+            if (! \in_array($connection, \PDO::getAvailableDrivers())) {
+                 throw new ConnectionException('unable connection driver ('. $connection .')');
+            }
 
             // make connection driver \PDO
             $pdo = $this->make($this->getDsn(), $this->getUsername(), $this->getPassword(), $this->config['options']);
@@ -131,24 +143,13 @@ class PdoConnection extends Connection
 
 
     /**
-     * @param $driver
-     * @return bool
-    */
-    protected function availableDrivers($driver): bool
-    {
-        return \in_array($driver, \PDO::getAvailableDrivers());
-    }
-
-
-
-
-    /**
      * @return string
+     * @throws \Exception
     */
     protected function getDsn(): string
     {
         return sprintf('%s:host=%s;port=%s;dbname=%s;',
-            $this->config->getTypeConnection(),
+            $this->getName(),
             $this->config->getHost(),
             $this->config->getPort(),
             $this->config->getDatabase()
@@ -156,26 +157,26 @@ class PdoConnection extends Connection
     }
 
 
-
     /**
      * @param string $sql
      * @param array $params
-     * @param array $options
      * @return QueryInterface
      * @throws ConnectionException
-     */
-    public function query(string $sql, array $params = [], array $options = []): QueryInterface
+    */
+    public function query(string $sql, array $params = []): QueryInterface
     {
-         $statement = new Query($this->getDriverConnection());
-         $statement->query($sql)
+         $query = new PdoQuery($this->getDriverConnection());
+         $query->query($sql)
                    ->params($params);
 
-         if (isset($options['referenceClass'])) {
-             $statement->metaClass($options['referenceClass']);
+         /*
+         if (isset($options['class'])) {
+             $statement->entityClass($options['class']);
          }
+         */
 
 
-         return $statement;
+         return $query;
     }
 
 

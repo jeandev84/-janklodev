@@ -16,10 +16,11 @@ interface EntityManagerInterface extends ObjectManagerInterface
 
 
     /**
-     * @param string $classMap
-     * @return mixed
+     * @return string
     */
-    public function registerClassMap(string $classMap);
+    public function getClassMap(): string;
+
+
 
 
 

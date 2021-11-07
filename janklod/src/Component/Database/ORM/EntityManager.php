@@ -4,11 +4,11 @@ namespace Jan\Component\Database\ORM;
 
 use Exception;
 use InvalidArgumentException;
+use Jan\Component\Database\Connection\PDO\PdoConfiguration;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Query\QueryBuilderFactory;
 use Jan\Component\Database\ORM\Records\Persistence;
 use Jan\Component\Database\ORM\Records\Deletion;
-use Jan\Component\Database\Connection\PdoConfiguration;
 use Jan\Component\Database\Connection\PDO\PdoConnection;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
 use Jan\Component\Database\ORM\Repository\EntityRepository;
@@ -25,7 +25,7 @@ class EntityManager implements EntityManagerInterface
 {
 
     /**
-     * @var PDO
+     * @var PdoConnection
     */
     protected $connection;
 
@@ -125,7 +125,7 @@ class EntityManager implements EntityManagerInterface
     /**
      * @return string
     */
-    public function getReferenceClass(): string
+    public function getClassMap(): string
     {
         return $this->classMap;
     }
@@ -203,9 +203,9 @@ class EntityManager implements EntityManagerInterface
      * @param string $sql
      * @return mixed
     */
-    public function exec(string $sql)
+    public function execQuery(string $sql)
     {
-       return $this->connection->exec($sql);
+        return $this->connection->exec($sql);
     }
 
 
@@ -237,7 +237,7 @@ class EntityManager implements EntityManagerInterface
     /**
      * @return array
     */
-    public function getRecordHandlers(): array
+    public function getFlushCommands(): array
     {
         return [$this->getPersistence(), $this->getDeletion()];
     }
@@ -252,8 +252,8 @@ class EntityManager implements EntityManagerInterface
     */
     public function flush()
     {
-        foreach ($this->getRecordHandlers() as $flushable) {
-            $flushable->execute();
+        foreach ($this->getFlushCommands() as $flushCommand) {
+            $flushCommand->execute();
         }
     }
 
@@ -265,15 +265,7 @@ class EntityManager implements EntityManagerInterface
     */
     public function createQueryBuilder(): QueryBuilder
     {
-        /** @var QueryBuilder $qb */
-        $qb = QueryBuilderFactory::make($this);
-
-        if ($this->classMap) {
-            $qb->setOption('referenceClass', $this->getReferenceClass());
-        }
-
-
-        return $qb;
+        return QueryBuilderFactory::make($this);
     }
 }
 
