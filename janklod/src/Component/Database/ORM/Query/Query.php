@@ -137,10 +137,6 @@ class Query implements QueryResultInterface
                 $collections[] = $this->prepareToPersistResult($result);
             }
 
-            if ($collections) {
-                return $collections;
-            }
-
-            return $results;
+            return $collections;
      }
 }
