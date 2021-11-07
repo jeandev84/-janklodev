@@ -32,15 +32,6 @@ class QueryBuilder extends SqlQueryBuilder
 
 
 
-
-      /**
-       * @var array
-      */
-      protected $queryOptions = [];
-
-
-
-
       /**
        * @param Connection $connection
       */
@@ -62,38 +53,6 @@ class QueryBuilder extends SqlQueryBuilder
 
 
       /**
-       * @param array $queryOptions
-      */
-      public function setQueryOptions(array $queryOptions)
-      {
-          $this->queryOptions = $queryOptions;
-      }
-
-
-
-
-      /**
-       * @param $key
-       * @param $value
-      */
-      public function setQueryOption($key, $value)
-      {
-          $this->queryOptions[$key] = $value;
-      }
-
-
-
-      /**
-       * @return array
-      */
-      public function getQueryOptions(): array
-      {
-          return $this->queryOptions;
-      }
-
-
-
-      /**
        * @return Query
        * @throws \Exception
       */
@@ -108,7 +67,8 @@ class QueryBuilder extends SqlQueryBuilder
               $query->entityClass($this->em->getClassMap());
           }
 
-          $this->prepareQueryToPersistence($query);
+          $this->em->prepareQueryToPersistence($query);
+
 
           return $query;
       }
@@ -153,40 +113,4 @@ class QueryBuilder extends SqlQueryBuilder
 
          return $context;
      }
-
-
-
-
-     /**
-      * @param Query $query
-     */
-     protected function prepareQueryToPersistence(Query $query)
-     {
-         $this->prepareToPersistResults($query->getResult());
-         $this->prepareToPersistResult($query->getOneOrNullResult());
-     }
-
-
-
-     /**
-      * @param $result
-     */
-     protected function prepareToPersistResult($result)
-     {
-         if (is_object($result)) {
-             $this->em->persist($result);
-         }
-     }
-
-
-
-    /**
-     * @param array $results
-    */
-    protected function prepareToPersistResults(array $results)
-    {
-        foreach ($results as $result) {
-            $this->prepareToPersistResult($result);
-        }
-    }
 }

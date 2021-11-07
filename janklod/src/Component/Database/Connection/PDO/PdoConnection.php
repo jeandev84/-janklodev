@@ -97,7 +97,6 @@ class PdoConnection extends Connection
 
 
 
-
     /**
      * @param string $dsn
      * @param string|null $username
@@ -167,14 +166,7 @@ class PdoConnection extends Connection
     {
          $query = new PdoQuery($this->getDriverConnection());
          $query->query($sql)
-                   ->params($params);
-
-         /*
-         if (isset($options['class'])) {
-             $statement->entityClass($options['class']);
-         }
-         */
-
+               ->params($params);
 
          return $query;
     }

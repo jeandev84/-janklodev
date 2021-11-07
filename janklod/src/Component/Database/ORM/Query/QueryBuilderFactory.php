@@ -19,9 +19,8 @@ class QueryBuilderFactory
      /**
       * @throws \Exception
      */
-     public static function make(EntityManager $em)
+     public static function make(Connection $connection)
      {
-            $connection = $em->getPdoConnection();
             $name = $connection->getName();
 
             switch ($name) {
@@ -35,8 +34,6 @@ class QueryBuilderFactory
                     throw new \Exception('unable to get query builder for connection : '. get_class($connection));
                     break;
             }
-
-            $qb->setEntityManager($em);
 
             return $qb;
       }

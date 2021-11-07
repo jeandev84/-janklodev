@@ -93,14 +93,6 @@ abstract class Connection implements ConnectionInterface
 
 
 
-    /**
-     * @throws \Exception
-    */
-    public function getPdo(): \PDO
-    {
-         throw new \Exception('unable connection pdo');
-    }
-
 
     /**
      * Get connection name

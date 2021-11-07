@@ -5,6 +5,7 @@ namespace Jan\Component\Database\ORM;
 use Exception;
 use InvalidArgumentException;
 use Jan\Component\Database\Connection\PDO\PdoConfiguration;
+use Jan\Component\Database\Connection\Query;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Query\QueryBuilderFactory;
 use Jan\Component\Database\ORM\Records\Persistence;
@@ -55,6 +56,14 @@ class EntityManager implements EntityManagerInterface
 
 
     /**
+     * @var bool
+    */
+    protected $enabledToPersistence = true;
+
+
+
+
+    /**
      * @var array
     */
     protected $metas = [];
@@ -73,6 +82,16 @@ class EntityManager implements EntityManagerInterface
           $this->deletion    = new Deletion($this);
     }
 
+
+
+
+    /**
+     * @param bool $enabled
+    */
+    public function enabledToPersistence(bool $enabled)
+    {
+          $this->enabledToPersistence = $enabled;
+    }
 
 
 
@@ -165,7 +184,7 @@ class EntityManager implements EntityManagerInterface
     /**
      * @return PdoConnection
     */
-    public function getPdoConnection()
+    public function getPdoConnection(): PdoConnection
     {
         return $this->connection;
     }
@@ -179,7 +198,7 @@ class EntityManager implements EntityManagerInterface
     */
     public function getConnection(): PDO
     {
-        return $this->connection->getPdo();
+        return $this->connection->getDriverConnection();
     }
 
 
@@ -193,8 +212,6 @@ class EntityManager implements EntityManagerInterface
     {
         return $this->connection->getConfiguration();
     }
-
-
 
 
 
@@ -265,7 +282,49 @@ class EntityManager implements EntityManagerInterface
     */
     public function createQueryBuilder(): QueryBuilder
     {
-        return QueryBuilderFactory::make($this);
+        $qb = QueryBuilderFactory::make($this->connection);
+        $qb->setEntityManager($this);
+        return $qb;
+    }
+
+
+
+
+    /**
+     * @param Query $query
+    */
+    public function prepareQueryToPersistence(Query $query)
+    {
+         if ($this->enabledToPersistence) {
+             $this->prepareToPersistResults($query->getResult());
+             $this->prepareToPersistResult($query->getOneOrNullResult());
+         }
+    }
+
+
+
+
+
+    /**
+     * @param $result
+    */
+    protected function prepareToPersistResult($result)
+    {
+        if (is_object($result)) {
+            $this->persist($result);
+        }
+    }
+
+
+
+    /**
+     * @param array $results
+    */
+    protected function prepareToPersistResults(array $results)
+    {
+        foreach ($results as $result) {
+            $this->prepareToPersistResult($result);
+        }
     }
 }
 
