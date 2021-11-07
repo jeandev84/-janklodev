@@ -20,7 +20,7 @@ class FooConnection extends Connection
     /**
      * @return mixed
      */
-    public function getDriver()
+    public function getDriverConnection()
     {
         // TODO: Implement getConnection() method.
     }

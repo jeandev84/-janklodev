@@ -2,7 +2,7 @@
 namespace Jan\Component\Database\Connection\Contract;
 
 
-use Jan\Component\Database\Connection\Configuration;
+use Jan\Component\Database\Connection\PdoConfiguration;
 
 
 /**
@@ -16,7 +16,7 @@ interface ConnectionInterface
    /**
      * open connection
      *
-     * @param array|Configuration $config
+     * @param array|PdoConfiguration $config
      * @return mixed
    */
    public function connect($config);
@@ -38,7 +38,7 @@ interface ConnectionInterface
     *
     * @return mixed
    */
-   public function getDriver();
+   public function getDriverConnection();
 
 
 

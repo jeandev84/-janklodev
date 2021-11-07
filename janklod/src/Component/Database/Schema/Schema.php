@@ -4,7 +4,7 @@ namespace Jan\Component\Database\Schema;
 
 use Closure;
 use Exception;
-use Jan\Component\Database\Connection\Configuration;
+use Jan\Component\Database\Connection\PdoConfiguration;
 use Jan\Component\Database\Managers\DatabaseManager;
 use Jan\Component\Database\ORM\EntityManager;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
@@ -27,7 +27,7 @@ class Schema
 
 
    /**
-    * @var Configuration
+    * @var PdoConfiguration
    */
    protected $config;
 

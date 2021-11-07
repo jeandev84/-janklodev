@@ -8,7 +8,7 @@ use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Query\QueryBuilderFactory;
 use Jan\Component\Database\ORM\Records\Persistence;
 use Jan\Component\Database\ORM\Records\Deletion;
-use Jan\Component\Database\Connection\Configuration;
+use Jan\Component\Database\Connection\PdoConfiguration;
 use Jan\Component\Database\Connection\PDO\PdoConnection;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
 use Jan\Component\Database\ORM\Repository\EntityRepository;
@@ -187,9 +187,9 @@ class EntityManager implements EntityManagerInterface
 
 
     /**
-     * @return Configuration
+     * @return PdoConfiguration
     */
-    public function getConfiguration(): Configuration
+    public function getConfiguration(): PdoConfiguration
     {
         return $this->connection->getConfiguration();
     }

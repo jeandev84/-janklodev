@@ -19,4 +19,15 @@ class MysqlConnection extends PdoConnection
     {
         return 'mysql';
     }
+
+
+    /**
+     * @return string[]
+    */
+    public function getDefaultOptions(): array
+    {
+        return [
+            'commands' => 'SET SQL_MODE=ANSI_QUOTES'
+        ];
+    }
 }

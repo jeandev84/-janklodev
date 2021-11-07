@@ -79,8 +79,10 @@ class UserController extends BaseController
    }
 
 
-
-   public function reset(UserRepository $repository)
+    /**
+     * @throws \Exception
+    */
+    public function reset(UserRepository $repository)
    {
         $users = $repository->findAll();
 

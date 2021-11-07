@@ -4,6 +4,7 @@ namespace Jan\Component\Database\Connection;
 
 use Jan\Component\Database\Connection\Contract\ConnectionInterface;
 use Jan\Component\Database\Connection\Contract\QueryInterface;
+use Jan\Component\Database\Connection\PDO\PdoConfiguration;
 
 
 /**
@@ -13,6 +14,7 @@ use Jan\Component\Database\Connection\Contract\QueryInterface;
 */
 abstract class Connection implements ConnectionInterface
 {
+
 
     /**
      * @var Configuration
@@ -38,21 +40,25 @@ abstract class Connection implements ConnectionInterface
 
 
     /**
-     * @var bool
+     * @param Configuration|null $config
     */
-    protected $connected = false;
+    public function __construct(Configuration $config = null)
+    {
+         if ($config) {
+             $this->setConfiguration($config);
+         }
+    }
 
 
 
 
     /**
-     * @param $config
+     * @param Configuration $config
     */
-    public function connect($config)
+    public function setConfiguration(Configuration $config)
     {
-         $this->config = $config;
+        $this->config = $config;
     }
-
 
 
 
@@ -72,7 +78,7 @@ abstract class Connection implements ConnectionInterface
     /**
      * @param $driver
     */
-    public function setDriver($driver)
+    public function setDriverConnection($driver)
     {
         $this->driver = $driver;
     }
@@ -82,7 +88,7 @@ abstract class Connection implements ConnectionInterface
     /**
      * @return mixed
     */
-    public function getDriver()
+    public function getDriverConnection()
     {
         return $this->driver;
     }
@@ -98,7 +104,6 @@ abstract class Connection implements ConnectionInterface
     }
 
 
-
     /**
      * Get connection name
      *
@@ -107,8 +112,32 @@ abstract class Connection implements ConnectionInterface
     */
     public function getName(): string
     {
-        throw new \Exception('unable connection name.');
+        throw new \Exception('unable connection name for connection ('. get_called_class() .')');
     }
+
+
+
+
+    /**
+     * @return mixed|null
+    */
+    protected function getUsername()
+    {
+        return $this->config['username'];
+    }
+
+
+
+
+    /**
+     * @return mixed|null
+    */
+    protected function getPassword()
+    {
+        return $this->config['password'];
+    }
+
+
 
 
     /**

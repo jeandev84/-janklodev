@@ -33,13 +33,13 @@ class SqliteConnection extends PdoConnection
 
 
 
+
       /**
-       * @param $driver
        * @return string
       */
-      protected function getDsn($driver): string
+      protected function getDsn(): string
       {
-          return sprintf('%s:%s', $driver, $this->config['database']);
+          return sprintf('%s:%s', $this->config->getTypeConnection(), $this->config->getDatabase());
       }
 
 

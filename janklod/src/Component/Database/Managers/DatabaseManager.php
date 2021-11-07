@@ -5,6 +5,7 @@ namespace Jan\Component\Database\Managers;
 use Exception;
 use InvalidArgumentException;
 use Jan\Component\Database\Connection\Configuration;
+use Jan\Component\Database\Connection\PdoConfiguration;
 use Jan\Component\Database\Connection\ConnectionFactory;
 use Jan\Component\Database\Connection\Contract\ConnectionInterface;
 use Jan\Component\Database\Connection\Connection;
@@ -140,17 +141,14 @@ class DatabaseManager implements DatabaseManagerInterface
 
 
 
-
-
-
     /**
-     * @param  string $name
-     * @param  mixed $connection
+     * @param Connection $connection
      * @return DatabaseManager
+     * @throws Exception
     */
-    public function setConnection(string $name, $connection): DatabaseManager
+    public function setConnection(Connection $connection): DatabaseManager
     {
-        $this->connections[$name] = $connection;
+        $this->connections[$connection->getName()] = $connection;
 
         return $this;
     }
@@ -161,11 +159,12 @@ class DatabaseManager implements DatabaseManagerInterface
     /**
      * @param array $connections
      * @return DatabaseManager
+     * @throws Exception
     */
     public function setConnections(array $connections): DatabaseManager
     {
-        foreach ($connections as $name => $connection) {
-            $this->setConnection($name, $connection);
+        foreach ($connections as $connection) {
+            $this->setConnection($connection);
         }
 
         return $this;
@@ -192,7 +191,7 @@ class DatabaseManager implements DatabaseManagerInterface
 
     /**
      * @param string $name
-     * @param array|string $config
+     * @param mixed $config
      * @return DatabaseManager
     */
     public function setConfiguration(string $name, $config): DatabaseManager
@@ -203,22 +202,23 @@ class DatabaseManager implements DatabaseManagerInterface
     }
 
 
+
+
+
     /**
      * get connection configuration params
      *
      * @param string $name
-     * @return Configuration
+     * @return array
      * @throws Exception
     */
-    public function configuration(string $name): Configuration
+    public function configuration(string $name): array
     {
         if (empty($this->configs[$name])) {
-            throw new RuntimeException(
-                sprintf('empty configuration params for connection to (%s)', $name)
-            );
+            throw new RuntimeException(sprintf('empty configuration params for connection to (%s)', $name));
         }
 
-        return new Configuration($this->configs[$name]);
+        return $this->configs[$name];
     }
 
 
@@ -241,14 +241,13 @@ class DatabaseManager implements DatabaseManagerInterface
         $this->setDefaultConnection($name);
 
         if (! $this->hasConnection($name)) {
-            return $this->factory->make($name, $config);
-        }
-
-        $connection = $this->connections[$name];
-
-        if ($connection instanceof Connection) {
+            $connection = $this->factory->make($name, $config);
+        }else{
+            $connection = $this->connections[$name];
             $connection->connect($config);
         }
+
+        $this->setStatus($connection->getName(), $connection->connected());
 
         return $connection;
     }
@@ -384,7 +383,7 @@ class DatabaseManager implements DatabaseManagerInterface
     */
     public function config(): Configuration
     {
-        return new Configuration($this->configs);
+        return $this->getConnection()->getConfiguration();
     }
 
 

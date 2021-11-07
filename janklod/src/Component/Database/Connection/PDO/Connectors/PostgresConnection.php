@@ -20,4 +20,15 @@ class PostgresConnection extends PdoConnection
     {
         return 'postgres'; // pgsql
     }
+
+
+    /**
+     * @return string[]
+    */
+    public function getDefaultOptions(): array
+    {
+        return [
+            'commands' => 'SET SQL_MODE=ANSI_QUOTES'
+        ];
+    }
 }

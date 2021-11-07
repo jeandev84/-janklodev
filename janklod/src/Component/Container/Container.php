@@ -9,8 +9,6 @@ use InvalidArgumentException;
 use Jan\Component\Container\Contract\ContainerBagInterface;
 use Jan\Component\Container\Contract\ContainerContract;
 use Jan\Component\Container\Contract\ContainerInterface;
-use Jan\Component\Container\Exception\BindingResolutionException;
-use Jan\Component\Container\Exception\ContainerException;
 use Jan\Component\Container\Facade\Facade;
 use Jan\Component\Container\ServiceProvider\Contract\BootableServiceProvider;
 use Jan\Component\Container\ServiceProvider\Exception\InvalidServiceProvider;
@@ -401,10 +399,6 @@ class Container implements ContainerContract
 
         } catch (Exception $e) {
 
-            if ($this->has($id)) {
-                throw $e;
-            }
-
             throw new Exception(sprintf('entry %s not found.', $id), $e->getCode(), $e);
         }
     }
@@ -519,7 +513,7 @@ class Container implements ContainerContract
      * @throws ReflectionException
      * @throws Exception
      */
-    public function makeInstance(string $concrete, array $params = [])
+    public function makeInstance(string $concrete, array $params = []): object
     {
         $reflectedClass = new ReflectionClass($concrete);
 

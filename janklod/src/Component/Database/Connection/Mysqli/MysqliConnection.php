@@ -26,7 +26,7 @@ class MysqliConnection implements ConnectionInterface
     /**
      * @return mixed
     */
-    public function getDriver()
+    public function getDriverConnection()
     {
 
     }

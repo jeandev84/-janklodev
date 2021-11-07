@@ -99,7 +99,6 @@ class DatabaseServiceProvider extends ServiceProvider implements BootableService
         $this->app->singleton(ManagerRegistryInterface::class, function () {
 
             $registry = new ManagerRegistry();
-            $registry->setDatabaseManager($this->app->get('capsule'));
             $registry->setEntityManager($this->app->get(EntityManager::class));
 
             return $registry;
