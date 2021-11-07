@@ -3,7 +3,6 @@ namespace Jan\Component\Database\ORM\Query;
 
 use Jan\Component\Database\Builder\Support\SqlQueryBuilder;
 use Jan\Component\Database\Connection\Connection;
-use Jan\Component\Database\Connection\PDO\PdoQuery;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
 
 

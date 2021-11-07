@@ -63,7 +63,8 @@ class Deletion extends Record implements FlushCommand
     */
     public function delete(string $table, array $criteria = [])
     {
-        $qb = $this->qb->delete($table);
+        $qb = $this->em->createQueryBuilder()
+                       ->delete($table);
 
         if (! $criteria) {
             return $qb;

@@ -73,6 +73,35 @@ class Persistence extends Record implements FlushCommand
 
 
 
+
+    /**
+     * @throws Exception
+    */
+    public function updateObject(object $object, array $criteria)
+    {
+        $attributes = $this->getAttributes($object);
+        $table = $this->makeTableName($object);
+
+        $this->update($attributes, $table, ['id' => $object->getId()]);
+    }
+
+
+
+
+    /**
+     * @throws Exception
+    */
+    public function insertObject(object $object)
+    {
+        $attributes = $this->getAttributes($object);
+        $table = $this->makeTableName($object);
+
+        $this->insert($attributes, $table);
+    }
+
+
+
+
     /**
      * @param $object
      * @return array

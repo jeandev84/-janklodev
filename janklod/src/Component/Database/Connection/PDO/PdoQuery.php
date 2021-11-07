@@ -162,11 +162,6 @@ class PdoQuery extends Query
                 }
             }
 
-            /*
-            $this->results = $this->fetchAll();
-            $this->result  = $this->fetch($this->fetchMode);
-            */
-
 
         } catch (PDOException $e) {
 
