@@ -58,7 +58,7 @@ class EntityManager implements EntityManagerInterface
     /**
      * @var bool
     */
-    protected $enabledToPersistence = true;
+    public $enabledToPersistence = true;
 
 
 
@@ -282,49 +282,14 @@ class EntityManager implements EntityManagerInterface
     */
     public function createQueryBuilder(): QueryBuilder
     {
+        if ($this->classMap) {
+            $this->connection->setEntityClass($this->getClassMap());
+        }
+
         $qb = QueryBuilderFactory::make($this->connection);
         $qb->setEntityManager($this);
+
         return $qb;
-    }
-
-
-
-
-    /**
-     * @param Query $query
-    */
-    public function prepareQueryToPersistence(Query $query)
-    {
-         if ($this->enabledToPersistence) {
-             $this->prepareToPersistResults($query->getResult());
-             $this->prepareToPersistResult($query->getOneOrNullResult());
-         }
-    }
-
-
-
-
-
-    /**
-     * @param $result
-    */
-    protected function prepareToPersistResult($result)
-    {
-        if (is_object($result)) {
-            $this->persist($result);
-        }
-    }
-
-
-
-    /**
-     * @param array $results
-    */
-    protected function prepareToPersistResults(array $results)
-    {
-        foreach ($results as $result) {
-            $this->prepareToPersistResult($result);
-        }
     }
 }
 

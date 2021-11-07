@@ -28,6 +28,16 @@ class UserController extends BaseController
     {
         $users = $repository->findAll();
 
+        $i = 1;
+        foreach ($users as $user) {
+            $email = $user->getEmail() . $i;
+            $user->setEmail($email);
+            $user->setUsername($email);
+            $i++;
+        }
+
+        $this->em->flush();
+
         return $this->render('users/index.php', compact('users'));
 
     }

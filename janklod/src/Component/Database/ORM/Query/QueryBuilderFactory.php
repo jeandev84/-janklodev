@@ -5,8 +5,8 @@ namespace Jan\Component\Database\ORM\Query;
 
 use Jan\Component\Database\Connection\Connection;
 use Jan\Component\Database\ORM\EntityManager;
-use Jan\Component\Database\ORM\Query\Types\MysqlQueryBuilder;
-use Jan\Component\Database\ORM\Query\Types\PostgresQueryBuilder;
+use Jan\Component\Database\ORM\Query\Builders\MysqlQueryBuilder;
+use Jan\Component\Database\ORM\Query\Builders\PostgresQueryBuilder;
 
 
 /**

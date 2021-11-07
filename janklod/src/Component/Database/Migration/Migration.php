@@ -16,7 +16,7 @@ abstract class Migration implements MigrationInterface
     /**
      * @var string
     */
-    protected $executedAt;
+    protected $createdAt;
 
 
     /**
@@ -31,6 +31,9 @@ abstract class Migration implements MigrationInterface
     abstract public function down();
 
 
+
+
+
     /**
      * @return string
     */
@@ -41,21 +44,23 @@ abstract class Migration implements MigrationInterface
 
 
 
+
     /**
      * @param \DateTime $date
     */
-    public function setExecutedAt(\DateTime $date)
+    public function setCreatedAt(\DateTime $date)
     {
-        $this->executedAt = $date->format('Y-m-d H:i:s');
+        $this->createdAt = $date->format('Y-m-d H:i:s');
     }
+
 
 
     /**
      * @return string
     */
-    public function getExecutedAt(): string
+    public function getCreatedAt(): string
     {
-        return $this->executedAt;
+        return $this->createdAt;
     }
 
 
@@ -66,5 +71,19 @@ abstract class Migration implements MigrationInterface
     public function getFileName()
     {
         return (new \ReflectionObject($this))->getFileName();
+    }
+
+
+    
+    
+    /**
+     * @return string[]
+    */
+    public function getAttributes(): array
+    {
+        return [
+            'version'     => (new \ReflectionObject($this))->getShortName(),
+            'executed_at' => $this->getCreatedAt()
+        ];
     }
 }

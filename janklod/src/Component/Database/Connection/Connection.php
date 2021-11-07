@@ -4,7 +4,7 @@ namespace Jan\Component\Database\Connection;
 
 use Jan\Component\Database\Connection\Contract\ConnectionInterface;
 use Jan\Component\Database\Connection\Contract\QueryInterface;
-use Jan\Component\Database\Connection\PDO\PdoConfiguration;
+
 
 
 /**

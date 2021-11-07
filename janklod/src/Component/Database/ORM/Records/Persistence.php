@@ -5,7 +5,7 @@ namespace Jan\Component\Database\ORM\Records;
 use Exception;
 use Jan\Component\Database\ORM\Contract\FlushCommand;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
-use Jan\Component\Database\ORM\Records\Support\ActiveRecord;
+use Jan\Component\Database\ORM\Records\Support\Record;
 
 
 
@@ -14,7 +14,7 @@ use Jan\Component\Database\ORM\Records\Support\ActiveRecord;
  *
  * @package Jan\Component\Database\ORM\Records
 */
-class Persistence extends ActiveRecord implements FlushCommand
+class Persistence extends Record implements FlushCommand
 {
 
     /**
@@ -56,15 +56,17 @@ class Persistence extends ActiveRecord implements FlushCommand
     */
     public function execute()
     {
-        foreach ($this->getObjects() as $object) {
+        if ($this->objects) {
+            foreach ($this->objects as $object) {
 
-            $attributes = $this->getAttributes($object);
-            $table = $this->makeTableName($object);
+                $attributes = $this->getAttributes($object);
+                $table = $this->makeTableName($object);
 
-            if ($id = $object->getId()) {
-                $this->update($attributes, $table, ['id' => $id]);
-            }else{
-                $this->insert($attributes, $table);
+                if ($id = $object->getId()) {
+                    $this->update($attributes, $table, ['id' => $id]);
+                }else{
+                    $this->insert($attributes, $table);
+                }
             }
         }
     }
@@ -94,7 +96,8 @@ class Persistence extends ActiveRecord implements FlushCommand
     */
     public function insert(array $attributes, string $table)
     {
-        return $this->qb->insert($attributes, $table)
+        return $this->em->createQueryBuilder()
+                        ->insert($attributes, $table)
                         ->execute();
     }
 
@@ -110,16 +113,18 @@ class Persistence extends ActiveRecord implements FlushCommand
     */
     public function update(array $attributes, string $table, array $criteria = [])
     {
-        $qb = $this->qb->update($attributes, $table);
+        $qb = $this->em->createQueryBuilder()->update($attributes, $table);
 
         if (! $criteria) {
             return $qb;
         }
 
         foreach (array_keys($criteria) as $column) {
-            $qb->where("$column = :$column");
+            $qb->where("$column = :{$column}");
         }
 
-        $qb->setParameters($criteria)->execute();
+        $qb->setParameters($criteria);
+
+        $qb->execute();
     }
 }

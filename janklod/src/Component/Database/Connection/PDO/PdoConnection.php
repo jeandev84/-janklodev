@@ -66,8 +66,6 @@ class PdoConnection extends Connection
 
             $this->setDriverConnection($pdo);
         }
-
-        // dd($this);
     }
 
 
@@ -156,6 +154,18 @@ class PdoConnection extends Connection
     }
 
 
+
+
+    /**
+     * @param string $entityClass
+    */
+    public function setEntityClass(string $entityClass)
+    {
+         $this->entityClass = $entityClass;
+    }
+
+
+
     /**
      * @param string $sql
      * @param array $params
@@ -167,6 +177,9 @@ class PdoConnection extends Connection
          $query = new PdoQuery($this->getDriverConnection());
          $query->query($sql)
                ->params($params);
+
+         $query->entityClass($this->entityClass);
+
 
          return $query;
     }

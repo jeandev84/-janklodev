@@ -7,14 +7,9 @@ namespace Jan\Component\Database\Connection\Contract;
  *
  * @package Jan\Component\Database\Connection\Contract
 */
-interface QueryInterface
+interface QueryInterface extends QueryResultInterface
 {
       public function query(string $sql);
       public function params(array $params);
       public function execute();
-      public function getArrayResult();
-      public function getArrayAssoc();
-      public function getArrayColumns();
-      public function getResult();
-      public function getOneOrNullResult();
 }

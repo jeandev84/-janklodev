@@ -14,13 +14,10 @@ use Jan\Component\Database\ORM\Repository\EntityRepository;
 interface EntityManagerInterface extends ObjectManagerInterface
 {
 
-
     /**
      * @return string
     */
     public function getClassMap(): string;
-
-
 
 
 

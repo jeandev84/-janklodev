@@ -2,7 +2,6 @@
 namespace Jan\Component\Database\Connection;
 
 use Jan\Component\Database\Connection\Contract\QueryInterface;
-use Jan\Component\Database\Connection\PDO\PdoQuery;
 
 
 /**
@@ -12,6 +11,7 @@ use Jan\Component\Database\Connection\PDO\PdoQuery;
 */
 abstract class Query implements QueryInterface
 {
+
 
     /**
      * @var string
@@ -24,7 +24,7 @@ abstract class Query implements QueryInterface
     /**
      * @var array
     */
-    protected $params;
+    protected $params = [];
 
 
 
@@ -42,10 +42,9 @@ abstract class Query implements QueryInterface
 
 
 
-
     /**
      * @param array $params
-     * @return PdoQuery
+     * @return Query
     */
     public function params(array $params): Query
     {
@@ -53,13 +52,4 @@ abstract class Query implements QueryInterface
 
         return $this;
     }
-
-
-
-    abstract public function execute();
-    abstract public function getArrayResult();
-    abstract public function getArrayAssoc();
-    abstract public function getArrayColumns();
-    abstract public function getResult();
-    abstract public function getOneOrNullResult();
 }

@@ -10,11 +10,11 @@ use ReflectionObject;
 
 
 /**
- * Class ActiveRecord
+ * Class Record
  *
  * @package Jan\Component\Database\ORM\Records\Support
 */
-abstract class ActiveRecord
+abstract class Record
 {
 
 
@@ -25,12 +25,6 @@ abstract class ActiveRecord
 
 
 
-    /**
-     * @var QueryBuilder
-    */
-    protected $qb;
-
-
 
     /**
      * @param EntityManagerInterface $em
@@ -38,7 +32,6 @@ abstract class ActiveRecord
     public function __construct(EntityManagerInterface $em)
     {
          $this->em = $em;
-         $this->qb = $em->createQueryBuilder();
     }
 
 

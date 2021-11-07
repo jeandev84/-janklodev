@@ -4,9 +4,8 @@ namespace Jan\Component\Database\ORM\Query;
 use Jan\Component\Database\Builder\Support\SqlQueryBuilder;
 use Jan\Component\Database\Connection\Connection;
 use Jan\Component\Database\Connection\PDO\PdoQuery;
-use Jan\Component\Database\Connection\Query;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
-use Jan\Component\Database\ORM\EntityManager;
+
 
 
 /**
@@ -58,18 +57,13 @@ class QueryBuilder extends SqlQueryBuilder
       */
       public function getQuery(): Query
       {
-          $query = $this->connection->query(
+          $qm = $this->connection->query(
               $this->getSQL(),
               $this->getParameters()
           );
 
-          if ($query instanceof PdoQuery) {
-              $query->entityClass($this->em->getClassMap());
-          }
-
-          $this->em->prepareQueryToPersistence($query);
-
-
+          $query = new Query($qm);
+          $query->setEntityManager($this->em);
           return $query;
       }
 

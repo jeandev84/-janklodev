@@ -6,7 +6,7 @@ use Exception;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\Builder\Support\SqlQueryBuilder;
 use Jan\Component\Database\ORM\Contract\FlushCommand;
-use Jan\Component\Database\ORM\Records\Support\ActiveRecord;
+use Jan\Component\Database\ORM\Records\Support\Record;
 
 
 /**
@@ -14,7 +14,7 @@ use Jan\Component\Database\ORM\Records\Support\ActiveRecord;
  *
  * @package Jan\Component\Database\ORM\Records
 */
-class Deletion extends ActiveRecord implements FlushCommand
+class Deletion extends Record implements FlushCommand
 {
 
     /**
@@ -36,19 +36,21 @@ class Deletion extends ActiveRecord implements FlushCommand
 
 
     /**
-     * @return mixed
+     * @return void
      * @throws \Exception
     */
     public function execute()
     {
-        foreach ($this->objects as $object) {
-           if (\is_object($object)) {
-               $table = $this->makeTableName($object);
-               if ($id = $object->getId()) {
-                   $this->delete($table, ['id' => $id]);
+       if ($this->objects) {
+           foreach ($this->objects as $object) {
+               if (\is_object($object)) {
+                   $table = $this->makeTableName($object);
+                   if ($id = $object->getId()) {
+                       $this->delete($table, ['id' => $id]);
+                   }
                }
            }
-        }
+       }
     }
 
 
