@@ -3,7 +3,7 @@ namespace Jan\Component\Database\ORM\Records;
 
 
 use Exception;
-use Jan\Component\Database\ORM\Contract\FlushCommand;
+use Jan\Component\Database\ORM\Contract\FlushCommandInterface;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Records\Support\Record;
 
@@ -14,7 +14,7 @@ use Jan\Component\Database\ORM\Records\Support\Record;
  *
  * @package Jan\Component\Database\ORM\Records
 */
-class Persistence extends Record implements FlushCommand
+class Persistence extends Record implements FlushCommandInterface
 {
 
     /**

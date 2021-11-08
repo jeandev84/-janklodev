@@ -3,11 +3,11 @@ namespace Jan\Component\Database\ORM\Contract;
 
 
 /**
- * Interface FlushCommand
+ * Interface FlushCommandInterface
  *
  * @package Jan\Component\Database\ORM\Contract
 */
-interface FlushCommand
+interface FlushCommandInterface
 {
     public function execute();
 }
