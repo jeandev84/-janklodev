@@ -2,8 +2,8 @@
 namespace Jan\Component\Database\ORM\Repository;
 
 
+use Jan\Component\Database\ORM\Helpers\InflectorObject;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
-use Jan\Component\Database\ORM\Mapping\InflectorObject;
 use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
 use Jan\Component\Database\ORM\Contract\ManagerRegistryInterface;
 

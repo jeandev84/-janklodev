@@ -1,12 +1,13 @@
 <?php
-namespace Jan\Component\Database\ORM\Mapping;
+namespace Jan\Component\Database\ORM\Helpers;
 
 use ReflectionObject;
+
 
 /**
  * Trait InflectorObject
  *
- * @package Jan\Component\Database\ORM\Mapping
+ * @package Jan\Component\Database\ORM\Helpers
 */
 trait InflectorObject
 {
