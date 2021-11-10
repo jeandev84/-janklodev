@@ -1,20 +1,18 @@
 <?php
-namespace Jan\Component\Database\Schema;
+namespace Jan\Component\Database\Migration;
 
 
 use Closure;
 use Exception;
-use Jan\Component\Database\Connection\PdoConfiguration;
+use Jan\Component\Database\Connection\PDO\PdoConfiguration;
 use Jan\Component\Database\Managers\DatabaseManager;
-use Jan\Component\Database\ORM\EntityManager;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
-
+use Jan\Component\Database\Migration\Table\BluePrint;
 
 
 /**
  * Class Schema
  *
- * @package Jan\Component\Database\Schema
+ * @package Jan\Component\Database\Migration
 */
 class Schema
 {
@@ -30,6 +28,8 @@ class Schema
     * @var PdoConfiguration
    */
    protected $config;
+
+
 
 
     /**

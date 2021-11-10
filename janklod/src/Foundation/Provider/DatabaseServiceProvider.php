@@ -116,9 +116,8 @@ class DatabaseServiceProvider extends ServiceProvider implements BootableService
 
              $capsule = $this->app->get('capsule');
              $migrator = new Migrator($capsule);
-             $migrator->migrationTable('capsule_migrations');
-
-             $migrator->addMigrations($this->loadMigrations($fs));
+             $migrator->setMigrationTable('capsule_migrations');
+             $migrator->setMigrations($this->loadMigrations($fs));
 
              return $migrator;
          });

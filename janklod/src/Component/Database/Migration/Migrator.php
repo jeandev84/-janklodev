@@ -4,10 +4,11 @@ namespace Jan\Component\Database\Migration;
 
 use Exception;
 use Jan\Component\Database\Managers\Capsule;
+use Jan\Component\Database\Migration\Support\Migration;
 use Jan\Component\Database\ORM\EntityManager;
 use Jan\Component\Database\Schema\Schema;
 use Jan\Component\Database\Schema\BluePrint;
-
+use Jan\Component\Database\Migration\Support\Migrator as BaseMigrator;
 
 
 /**
@@ -15,404 +16,64 @@ use Jan\Component\Database\Schema\BluePrint;
  *
  * @package Jan\Component\Database\Migration
 */
-class Migrator
+class Migrator extends BaseMigrator
 {
 
-    /**
-     * @var string
-    */
-    protected $migrationTable = 'migrations';
-
-
-
 
     /**
-     * @var Capsule
-    */
-    protected $db;
-
-
-
-
-    /**
-     * @var Schema
-    */
-    protected $schema;
-
-
-
-    /**
-     * @var EntityManager
-    */
-    protected $qb;
-
-
-
-
-    /**
-     * @var array
-    */
-    protected $migrations = [];
-
-
-
-    /**
-     * @var array
-    */
-    protected $migrationFiles = [];
-
-
-
-
-    /**
-     * @var array
-    */
-    protected $migrationLog = [];
-
-
-    /**
-     * @param Capsule $db
-     * @throws Exception
-    */
-    public function __construct(Capsule $db)
+     * @return mixed
+     */
+    public function createMigrationTable()
     {
-        $this->db     = $db;
-        $this->qb     = $db->getEntityManager()->createQueryBuilder();
-        $this->schema = $db->schema();
+        // TODO: Implement createMigrationTable() method.
     }
-
-
-
-    /**
-     * Set table name for versions migrations
-     *
-     * @param string $migrationTable
-     * @return $this
-    */
-    public function migrationTable(string $migrationTable): Migrator
-    {
-        $this->migrationTable = $migrationTable;
-
-        return $this;
-    }
-
-
-
-    /**
-     * Add migration
-     *
-     * @param Migration $migration
-     * @return $this
-    */
-    public function addMigration(Migration $migration): Migrator
-    {
-        $name = $migration->getName();
-
-        $this->migrations[$name] = $migration;
-
-        $this->migrationFiles[$name] = $migration->getFileName();
-
-        return $this;
-    }
-
-
-
-    /**
-     * @param array $migrations
-     * @return $this
-    */
-    public function addMigrations(array $migrations): Migrator
-    {
-         foreach ($migrations as $migration) {
-             $this->addMigration($migration);
-         }
-
-         return $this;
-    }
-
 
     /**
      * @return array
-    */
-    public function getMigrations(): array
-    {
-        return $this->migrations;
-    }
-
-
-
-    /**
-     * @return array
-     * @throws Exception
-    */
+     */
     public function getAppliedMigrations(): array
     {
-        /*
-        $sql = sprintf('SELECT `version` FROM %s;', $this->migrationTable);
-
-        return $this->db->query($sql)->getArrayColumns();
-        */
-
-        return $this->qb->select('version')
-                        ->from($this->migrationTable)
-                        ->getQuery()
-                        ->getArrayColumns();
-
+        // TODO: Implement getAppliedMigrations() method.
     }
-
-
 
     /**
      * @return array
-     * @throws Exception
-    */
-    protected function getToApplyMigrations(): array
+     */
+    public function getToApplyMigrations(): array
     {
-        $migrations = [];
-
-        /** @var Migration $migration */
-        foreach ($this->migrations as $migration) {
-            if (! \in_array($migration->getName(), $this->getAppliedMigrations())) {
-                 $migrations[] = $migration;
-            }
-        }
-
-        return $migrations;
+        // TODO: Implement getToApplyMigrations() method.
     }
-
-
-
 
     /**
-     * Create a migration table
-     *
-     * @throws Exception
-    */
-    public function install(\Closure $closure = null)
+     * @return mixed
+     */
+    public function install()
     {
-        if (! $closure) {
-            $closure = function (BluePrint $table) {
-                $table->increments('id');
-                $table->string('version');
-                $table->datetime('executed_at');
-            };
-        }
-
-        $this->schema->create($this->migrationTable, $closure);
+        // TODO: Implement install() method.
     }
-
-
-
 
     /**
-     * @throws Exception
-    */
-    public function migrate()
+     * @return mixed
+     */
+    public function diff()
     {
-        $this->install();
-
-        $diffMigrations = $this->getToApplyMigrations();
-
-        if (! empty($diffMigrations)) {
-            $this->upMigrations($diffMigrations);
-        }else {
-            $this->log("All migrations are applied.");
-        }
+        // TODO: Implement diff() method.
     }
-
-
-
-
 
     /**
-     * @param array $migrations
-     * @throws Exception
-    */
-    public function upMigrations(array $migrations)
+     * @return mixed
+     */
+    public function removeMigrations()
     {
-        /** @var Migration $migration */
-        foreach ($migrations as $migration) {
-
-            if (method_exists($migration, 'up')) {
-
-                $this->log("Applying migration {$migration->getName()}");
-                $migration->up();
-                $this->log("Applied migration {$migration->getName()}");
-
-                $migration->setCreatedAt(new \DateTime());
-
-                $this->saveMigration($migration);
-            }
-        }
+        // TODO: Implement removeMigrations() method.
     }
-
-
-
 
     /**
      * @param Migration $migration
-     * @throws Exception
-    */
-    public function saveMigration(Migration $migration)
+     * @return mixed
+     */
+    public function reverseMigration(Migration $migration)
     {
-        if(! $attributes = $migration->getAttributes()) {
-
-            $attributes = [
-                'version'     => $migration->getName(),
-                'executed_at' => $migration->getCreatedAt()
-            ];
-        }
-
-        $sql = sprintf(
-     "INSERT INTO `%s` (version, executed_at) VALUES (:version, :executedAt)",
-            $this->migrationTable
-        );
-
-        $this->db->query($sql, $attributes)->execute();
-    }
-
-
-
-    /**
-     * @param array $migrations
-    */
-    protected function downMigrations(array $migrations)
-    {
-         foreach ($migrations as $migration) {
-             if (method_exists($migration, 'down')) {
-                 $migration->down();
-             }
-         }
-    }
-
-
-
-
-    /**
-     * @throws Exception
-    */
-    public function rollback()
-    {
-        $this->downMigrations($this->migrations);
-
-        $this->schema->truncate($this->migrationTable);
-    }
-
-
-
-
-    /**
-     * Reset migrations
-     *
-     * @throws Exception
-    */
-    public function reset()
-    {
-        $this->rollback();
-        $this->schema->dropIfExists($this->migrationTable);
-        $this->removeMigrationFiles();
-    }
-
-
-
-
-    /**
-     * @param string $migrationName
-     * @throws Exception
-    */
-    public function removeMigration(string $migrationName)
-    {
-         if (! $this->hasMigration($migrationName)) {
-              throw new \RuntimeException('Cannot remove migration : '. $migrationName);
-         }
-
-         /** @var Migration $migration */
-         $migration = $this->migrations[$migrationName];
-
-         // remove migration from database
-         $this->db->query("DELETE FROM {$this->migrationTable} WHERE `version` = :version", [
-                      'version' => $migration->getName()
-                  ])
-                  ->execute();
-
-         // remove migration from the list
-         unset($this->migrations[$migrationName]);
-
-         // remove migration file
-         $this->removeMigrationFile($migration);
-    }
-
-
-
-    /**
-     * @param string $migrationName
-     * @return bool
-    */
-    public function hasMigration(string $migrationName): bool
-    {
-         return \array_key_exists($migrationName, $this->migrations);
-    }
-
-
-
-
-    /**
-     * Remove migration files
-    */
-    public function removeMigrationFiles()
-    {
-        array_map('unlink', $this->getMigrationFiles());
-    }
-
-
-
-    /**
-     * @param Migration $migration
-    */
-    public function removeMigrationFile(Migration $migration)
-    {
-          @unlink($migration->getFileName());
-    }
-
-
-
-    /**
-     * @return array
-    */
-    public function getMigrationFiles(): array
-    {
-        return array_values($this->migrationFiles);
-    }
-
-
-
-    /**
-     * @param $migration
-     * @return bool
-    */
-    public function exists($migration): bool
-    {
-        return $migration instanceof Migration;
-    }
-
-
-    /**
-     * @param string $message
-    */
-    public function log(string $message)
-    {
-        $message = '['. date('Y-m-d H:i:s') .'] - '. $message .PHP_EOL;
-
-        $this->migrationLog[] = $message;
-    }
-
-
-
-    /**
-     * @return void
-    */
-    public function displayLog()
-    {
-        echo join("\n", $this->migrationLog);
+        // TODO: Implement reverseMigration() method.
     }
 }

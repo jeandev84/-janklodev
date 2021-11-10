@@ -37,4 +37,13 @@ class Version20211024002333 extends Migration
     {
         Schema::dropIfExists('news');
     }
+
+
+    /**
+     * @return array
+     */
+    public function getAttributesToSave(): array
+    {
+        return [];
+    }
 }

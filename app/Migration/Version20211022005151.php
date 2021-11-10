@@ -42,4 +42,12 @@ class Version20211022005151 extends Migration
     {
         Schema::dropIfExists('users');
     }
+
+    /**
+     * @return array
+     */
+    public function getAttributesToSave(): array
+    {
+        return [];
+    }
 }
