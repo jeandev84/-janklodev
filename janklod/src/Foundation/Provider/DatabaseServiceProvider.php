@@ -6,10 +6,10 @@ use Jan\Component\Container\ServiceProvider\Contract\BootableServiceProvider;
 use Jan\Component\Container\ServiceProvider\ServiceProvider;
 use Jan\Component\Database\Managers\Capsule;
 use Jan\Component\Database\ORM\EntityManager;
-use Jan\Component\Database\ORM\ManagerRegistry;
+use Jan\Component\Database\Managers\ManagerRegistry;
 use Jan\Component\Database\Connection\PDO\PdoConnection;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
-use Jan\Component\Database\ORM\Contract\ManagerRegistryInterface;
+use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
+use Jan\Component\Database\Managers\Contract\ManagerRegistryInterface;
 use Jan\Component\Database\Migration\Migrator;
 use Jan\Component\FileSystem\FileSystem;
 
