@@ -3,7 +3,7 @@ namespace Jan\Component\Database\ORM\Query;
 
 use Jan\Component\Database\Builder\Support\SqlQueryBuilder;
 use Jan\Component\Database\Connection\Connection;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
+use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
 
 
 

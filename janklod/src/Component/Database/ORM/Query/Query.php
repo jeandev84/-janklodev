@@ -4,7 +4,7 @@ namespace Jan\Component\Database\ORM\Query;
 
 use Jan\Component\Database\Connection\Contract\QueryInterface;
 use Jan\Component\Database\Connection\Contract\QueryResultInterface;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
+use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
 
 
 
