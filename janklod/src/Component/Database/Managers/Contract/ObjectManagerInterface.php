@@ -1,11 +1,11 @@
 <?php
-namespace Jan\Component\Database\ORM\Contract;
+namespace Jan\Component\Database\Managers\Contract;
 
 
 /**
  * Interface ObjectManagerInterface
  *
- * @package Jan\Component\Database\ORM\Contract
+ * @package Jan\Component\Database\Managers\Contract
 */
 interface ObjectManagerInterface
 {

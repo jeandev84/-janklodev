@@ -2,7 +2,7 @@
 namespace App\Repository;
 
 use App\Entity\News;
-use Jan\Component\Database\ORM\Contract\ManagerRegistryInterface;
+use Jan\Component\Database\Managers\Contract\ManagerRegistryInterface;
 use Jan\Component\Database\ORM\Repository\ServiceRepository;
 
 

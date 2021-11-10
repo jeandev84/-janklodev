@@ -4,8 +4,8 @@ namespace Jan\Component\Database\ORM\Repository;
 
 use Jan\Component\Database\ORM\Helpers\InflectorObject;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
-use Jan\Component\Database\ORM\Contract\ManagerRegistryInterface;
+use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
+use Jan\Component\Database\Managers\Contract\ManagerRegistryInterface;
 
 
 /**
@@ -42,7 +42,7 @@ class EntityRepository
     public function __construct(ManagerRegistryInterface $registry, $entityClass)
     {
          $this->em = $registry->getEntityManager();
-         $this->em->registerClassMap($entityClass);
+         $this->em->setClassMap($entityClass);
          $this->entityClass = $entityClass;
     }
 

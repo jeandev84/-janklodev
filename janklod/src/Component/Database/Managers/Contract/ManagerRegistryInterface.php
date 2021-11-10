@@ -1,8 +1,6 @@
 <?php
-namespace Jan\Component\Database\ORM\Contract;
+namespace Jan\Component\Database\Managers\Contract;
 
-
-use Jan\Component\Database\Managers\Contract\DatabaseManagerInterface;
 
 
 /**

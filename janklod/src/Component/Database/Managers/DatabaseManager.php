@@ -5,7 +5,6 @@ namespace Jan\Component\Database\Managers;
 use Exception;
 use InvalidArgumentException;
 use Jan\Component\Database\Connection\Configuration;
-use Jan\Component\Database\Connection\PdoConfiguration;
 use Jan\Component\Database\Connection\ConnectionFactory;
 use Jan\Component\Database\Connection\Contract\ConnectionInterface;
 use Jan\Component\Database\Connection\Connection;

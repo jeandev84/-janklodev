@@ -1,5 +1,5 @@
 <?php
-namespace Jan\Component\Database\ORM\Contract;
+namespace Jan\Component\Database\Managers\Contract;
 
 
 use Jan\Component\Database\ORM\Query\QueryBuilder;
@@ -13,6 +13,12 @@ use Jan\Component\Database\ORM\Repository\EntityRepository;
 */
 interface EntityManagerInterface extends ObjectManagerInterface
 {
+
+
+
+    public function setClassMap(string $classMap);
+
+
 
     /**
      * @return string

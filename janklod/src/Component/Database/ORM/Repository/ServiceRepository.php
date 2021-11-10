@@ -2,7 +2,7 @@
 namespace Jan\Component\Database\ORM\Repository;
 
 
-use Jan\Component\Database\ORM\Contract\ManagerRegistryInterface;
+use Jan\Component\Database\Managers\Contract\ManagerRegistryInterface;
 
 
 /**

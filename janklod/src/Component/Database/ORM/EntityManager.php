@@ -5,13 +5,12 @@ namespace Jan\Component\Database\ORM;
 use Exception;
 use InvalidArgumentException;
 use Jan\Component\Database\Connection\PDO\PdoConfiguration;
-use Jan\Component\Database\Connection\Query;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Query\QueryBuilderFactory;
 use Jan\Component\Database\ORM\Records\Persistence;
 use Jan\Component\Database\ORM\Records\Deletion;
 use Jan\Component\Database\Connection\PDO\PdoConnection;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
+use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
 use Jan\Component\Database\ORM\Repository\EntityRepository;
 use PDO;
 
@@ -134,7 +133,7 @@ class EntityManager implements EntityManagerInterface
     /**
      * @param string $classMap
     */
-    public function registerClassMap(string $classMap)
+    public function setClassMap(string $classMap)
     {
          $this->classMap = $classMap;
     }

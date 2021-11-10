@@ -1,17 +1,17 @@
 <?php
-namespace Jan\Component\Database\ORM;
+namespace Jan\Component\Database\Managers;
 
 
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
+use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
 use Jan\Component\Database\Managers\Contract\DatabaseManagerInterface;
-use Jan\Component\Database\ORM\Contract\ObjectManagerInterface;
-use Jan\Component\Database\ORM\Contract\ManagerRegistryInterface;
+use Jan\Component\Database\Managers\Contract\ObjectManagerInterface;
+use Jan\Component\Database\Managers\Contract\ManagerRegistryInterface;
 
 
 /**
  * Class ManagerRegistry
  *
- * @package Jan\Component\Database\ORM
+ * @package Jan\Component\Database\Managers
 */
 class ManagerRegistry implements ManagerRegistryInterface
 {

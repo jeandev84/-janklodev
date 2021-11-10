@@ -2,9 +2,7 @@
 namespace Jan\Component\Database\ORM\Records\Support;
 
 
-use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\EntityManager;
-use Jan\Component\Database\ORM\Contract\EntityManagerInterface;
 use ReflectionObject;
 
 
@@ -27,9 +25,9 @@ abstract class Record
 
 
     /**
-     * @param EntityManagerInterface $em
+     * @param EntityManager $em
     */
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManager $em)
     {
          $this->em = $em;
     }
