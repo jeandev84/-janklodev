@@ -9,13 +9,10 @@ use Jan\Component\Database\Connection\PDO\PdoConfiguration;
 use Jan\Component\Database\ORM\Query\Query;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Query\QueryBuilderFactory;
-use Jan\Component\Database\ORM\Record\Persistence;
-use Jan\Component\Database\ORM\Record\Deletion;
 use Jan\Component\Database\Connection\PDO\PdoConnection;
 use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
 use Jan\Component\Database\ORM\Record\Record;
 use Jan\Component\Database\ORM\Repository\EntityRepository;
-use PDO;
 use ReflectionObject;
 
 
@@ -41,22 +38,6 @@ class EntityManager extends ObjectManager implements EntityManagerInterface
 
 
 
-
-    /**
-     * @var Persistence
-    */
-    protected $persistence;
-
-
-
-    /**
-     * @var Deletion
-    */
-    protected $deletion;
-
-
-
-
     /**
      * @var QueryBuilderFactory
     */
@@ -74,16 +55,20 @@ class EntityManager extends ObjectManager implements EntityManagerInterface
 
 
     /**
-     * @var array
+     * @var Record
     */
-    protected $entities = [];
+    protected $record;
+
 
 
 
     /**
      * @var array
     */
-    protected $metaObjects = [];
+    protected $entities = [];
+
+
+
 
 
     /**
@@ -93,6 +78,7 @@ class EntityManager extends ObjectManager implements EntityManagerInterface
     public function __construct(Connection $connection)
     {
           $this->connection     = $connection;
+          $this->record         = new Record($this);
           $this->builderFactory = new QueryBuilderFactory($connection);
     }
 
@@ -110,19 +96,6 @@ class EntityManager extends ObjectManager implements EntityManagerInterface
          $this->entities[$entity] = $repository;
     }
 
-
-
-
-
-    /**
-     * @param array $objects
-    */
-    public function setMetaObjects(array $objects)
-    {
-         foreach ($objects as $object) {
-             $this->persist($object);
-         }
-    }
 
 
 
@@ -249,32 +222,11 @@ class EntityManager extends ObjectManager implements EntityManagerInterface
     {
         $objects = $this->qb->getQuery()->getResultAsObjects();
 
-        // add to persist
         foreach ($objects as $object) {
             $this->update($object);
         }
 
-        $this->flushPrivileges(new Record($this));
-    }
-
-
-
-
-    /**
-     * @param object $object
-     * @return array
-    */
-    public function getProperties(object $object): array
-    {
-        $mappedProperties = [];
-        $reflectedObject = new ReflectionObject($object);
-
-        foreach($reflectedObject->getProperties() as $property) {
-            $property->setAccessible(true);
-            $mappedProperties[$property->getName()] = $property->getValue($object);
-        }
-
-        return $mappedProperties;
+        $this->flushPrivileges($this->record);
     }
 }
 
