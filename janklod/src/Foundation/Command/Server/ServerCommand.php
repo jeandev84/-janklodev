@@ -20,7 +20,7 @@ class ServerCommand extends Command
 
     const WEBROOT = 'public';
     const D_ERROR = 1;
-    const PORT = '8000';
+    const PORT = '8888';
 
 
 

@@ -45,6 +45,15 @@ class SqlQueryBuilder
 
 
 
+
+     /**
+      * @var array
+     */
+     protected $sqlConstraints = [];
+
+
+
+
      /**
       * @var array
      */

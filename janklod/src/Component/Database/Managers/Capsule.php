@@ -3,6 +3,8 @@ namespace Jan\Component\Database\Managers;
 
 
 use Exception;
+use Jan\Component\Database\Connection\Connection;
+use Jan\Component\Database\Connection\PDO\PdoConnection;
 use Jan\Component\Database\ORM\EntityManager;
 
 
@@ -16,9 +18,10 @@ class Capsule extends DatabaseManager
 
 
     /**
-     * @var DatabaseManager
+     * @var Capsule
     */
     protected static $instance;
+
 
 
 
@@ -26,6 +29,8 @@ class Capsule extends DatabaseManager
      * @var EntityManager
     */
     protected $em;
+
+
 
 
     /**
@@ -42,6 +47,7 @@ class Capsule extends DatabaseManager
 
     /**
      * @return $this
+     * @throws Exception
     */
     public function bootAsGlobal(): DatabaseManager
     {
@@ -55,11 +61,11 @@ class Capsule extends DatabaseManager
 
 
     /**
-     * @return DatabaseManager
+     * @return Capsule
      *
      * @throws Exception
     */
-    public static function instance(): DatabaseManager
+    public static function instance(): Capsule
     {
         if (! static::$instance) {
             throw new Exception('Cannot get instance of capsule.');

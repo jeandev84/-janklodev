@@ -1,9 +1,12 @@
 <?php
 namespace Jan\Component\Database\Connection\PDO;
 
+
+
 use Exception;
-use Jan\Component\Database\Connection\Exception\QueryException;
-use Jan\Component\Database\Connection\Query;
+use Jan\Component\Database\Collection\ArrayCollection;
+use Jan\Component\Database\Connection\Contract\QueryInterface;
+use Jan\Component\Database\ORM\Query\Exception\QueryException;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -12,11 +15,11 @@ use PDOStatement;
 
 
 /**
- * Class PdoQuery
+ * Class Query
  *
- * @package Jan\Component\Database\Connection\PDO
+ * @package an\Component\Database\Connection\PDO
 */
-class PdoQuery extends Query
+class Query implements QueryInterface
 {
 
 
@@ -29,8 +32,24 @@ class PdoQuery extends Query
 
 
     /**
-     * @var PDOStatement
+     * @var string
     */
+    protected $sql;
+
+
+
+
+    /**
+     * @var array
+    */
+    protected $params;
+
+
+
+
+    /**
+     * @var PDOStatement
+     */
     protected $statement;
 
 
@@ -39,7 +58,7 @@ class PdoQuery extends Query
 
     /**
      * @var int
-    */
+     */
     protected $fetchMode = PDO::FETCH_OBJ;
 
 
@@ -47,7 +66,7 @@ class PdoQuery extends Query
 
     /**
      * @var string
-    */
+     */
     protected $entityClass = \stdClass::class;
 
 
@@ -56,17 +75,9 @@ class PdoQuery extends Query
 
     /**
      * @var array
-    */
+     */
     protected $bindValues = [];
 
-
-
-
-
-    /**
-     * @var mixed
-     */
-    protected $result;
 
 
 
@@ -74,6 +85,14 @@ class PdoQuery extends Query
      * @var array
      */
     protected $cache = [];
+
+
+
+
+    /**
+     * @var ArrayCollection
+    */
+    protected $collections;
 
 
 
@@ -89,10 +108,37 @@ class PdoQuery extends Query
 
 
 
+
+    /**
+     * @param string $sql
+     * @return $this
+    */
+    public function query(string $sql): Query
+    {
+        $this->sql = $sql;
+
+        return $this;
+    }
+
+
+
+    /**
+     * @param array $params
+     * @return Query
+    */
+    public function params(array $params): Query
+    {
+        $this->params = $params;
+
+        return $this;
+    }
+
+
+
     /**
      * @param int $fetchMode
      * @return Query
-     */
+    */
     public function fetchMode(int $fetchMode): Query
     {
         $this->fetchMode = $fetchMode;
@@ -176,7 +222,7 @@ class PdoQuery extends Query
     /**
      * @return array
      * @throws Exception
-    */
+     */
     public function getArrayResult(): array
     {
         $this->execute();
@@ -191,7 +237,7 @@ class PdoQuery extends Query
     /**
      * @return array|false
      * @throws Exception
-    */
+     */
     public function getArrayAssoc()
     {
         $this->execute();
@@ -204,7 +250,7 @@ class PdoQuery extends Query
 
     /**
      * @throws Exception
-    */
+     */
     public function getArrayColumns()
     {
         $this->execute();
@@ -217,7 +263,7 @@ class PdoQuery extends Query
     /**
      * @return array
      * @throws Exception
-    */
+     */
     public function getResult(): array
     {
         $this->execute();
@@ -235,12 +281,16 @@ class PdoQuery extends Query
     /**
      * @return mixed
      * @throws Exception
-    */
+     */
     public function getFirstResult()
     {
+        /*
         $result = $this->getResult();
 
         return $result[0] ?? null;
+        */
+
+        return null;
     }
 
 
@@ -248,7 +298,7 @@ class PdoQuery extends Query
     /**
      * @return mixed
      * @throws Exception
-    */
+     */
     public function getOneOrNullResult()
     {
         $this->execute();
@@ -264,9 +314,20 @@ class PdoQuery extends Query
 
 
     /**
+     * @return ArrayCollection
+    */
+    public function getCollection(): ArrayCollection
+    {
+        return $this->collections;
+    }
+
+
+
+
+    /**
      * @param string $sql
      * @param array $params
-    */
+     */
     public function addToCache(string $sql, array $params)
     {
         $this->cache[$sql] = $params;

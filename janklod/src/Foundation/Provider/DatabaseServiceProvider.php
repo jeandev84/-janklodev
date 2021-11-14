@@ -62,9 +62,7 @@ class DatabaseServiceProvider extends ServiceProvider implements BootableService
             $capsule->addConnection($config['database'], $config['database']['connection']);
             $capsule->bootAsGlobal();
 
-            /** @var PdoConnection $connection */
             $connection = $capsule->getConnection();
-
             $em = new EntityManager($connection);
 
             $capsule->setEntityManager($em);

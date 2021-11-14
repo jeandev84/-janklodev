@@ -57,20 +57,20 @@ interface ConnectionInterface
 
 
 
-
-   /**
-     * @param string $sql
-     * @param array $params
-     * @return mixed
-   */
-   public function query(string $sql, array $params = []);
-
-
-
-
    /**
      * @param string $sql
      * @return mixed
    */
    public function exec(string $sql);
+
+
+
+    /**
+     * Create a query.
+     *
+     * @param string $sql
+     * @param array $params
+     * @return QueryInterface
+    */
+    public function query(string $sql, array $params = []): QueryInterface;
 }

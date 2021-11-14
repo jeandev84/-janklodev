@@ -166,25 +166,6 @@ class PdoConnection extends Connection
 
 
 
-    /**
-     * @param string $sql
-     * @param array $params
-     * @return QueryInterface
-     * @throws ConnectionException
-    */
-    public function query(string $sql, array $params = []): QueryInterface
-    {
-         $query = new PdoQuery($this->getDriverConnection());
-         $query->query($sql)
-               ->params($params);
-
-         $query->entityClass($this->entityClass);
-
-
-         return $query;
-    }
-
-
 
     /**
      * @param string $sql
@@ -231,5 +212,15 @@ class PdoConnection extends Connection
     protected function getDefaultOptions(): array
     {
         return [];
+    }
+
+
+    /**
+     * @return QueryInterface
+     * @throws ConnectionException
+    */
+    public function createQuery(): QueryInterface
+    {
+         return new Query($this->getDriverConnection());
     }
 }

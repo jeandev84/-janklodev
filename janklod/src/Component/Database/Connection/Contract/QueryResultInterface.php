@@ -1,6 +1,12 @@
 <?php
 namespace Jan\Component\Database\Connection\Contract;
 
+
+/**
+ * Class QueryResultInterface
+ *
+ * @package Jan\Component\Database\Connection\Contract
+*/
 interface QueryResultInterface
 {
     public function getArrayResult();

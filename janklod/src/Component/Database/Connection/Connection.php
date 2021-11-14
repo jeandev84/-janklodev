@@ -4,7 +4,7 @@ namespace Jan\Component\Database\Connection;
 
 use Jan\Component\Database\Connection\Contract\ConnectionInterface;
 use Jan\Component\Database\Connection\Contract\QueryInterface;
-
+use Jan\Component\Database\Connection\Exception\ConnectionException;
 
 
 /**
@@ -129,21 +129,36 @@ abstract class Connection implements ConnectionInterface
 
 
 
-
-    /**
-     * @param string $sql
-     * @param array $params
-     * @return QueryInterface
-    */
-    abstract public function query(string $sql, array $params = []): QueryInterface;
-
-
-
-
     /**
      * Determine if, has connection.
      *
      * @return bool
     */
     abstract public function connected(): bool;
+
+
+
+
+    /**
+     * @return QueryInterface
+    */
+    abstract public function createQuery(): QueryInterface;
+
+
+
+    /**
+     * Create a query.
+     *
+     * @param string $sql
+     * @param array $params
+     * @return QueryInterface
+    */
+    public function query(string $sql, array $params = []): QueryInterface
+    {
+        $query = $this->createQuery();
+        $query->query($sql);
+        $query->params($params);
+
+        return $query;
+    }
 }

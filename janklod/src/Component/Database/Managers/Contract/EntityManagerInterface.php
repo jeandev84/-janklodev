@@ -15,7 +15,10 @@ interface EntityManagerInterface extends ObjectManagerInterface
 {
 
 
-
+    /**
+     * @param string $classMap
+     * @return mixed
+    */
     public function setClassMap(string $classMap);
 
 
@@ -32,6 +35,7 @@ interface EntityManagerInterface extends ObjectManagerInterface
      * @return QueryBuilder
     */
     public function createQueryBuilder(): QueryBuilder;
+
 
 
 

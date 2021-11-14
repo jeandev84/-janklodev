@@ -8,7 +8,7 @@ use Jan\Component\Database\ORM\Query\QueryBuilder;
 /**
  * class MysqlQueryBuilder
  *
- * @package Jan\Component\Database\ORM\Query\Builders
+ * @package Jan\Component\Database\ORM\Builders
 */
 class MysqlQueryBuilder extends QueryBuilder
 {

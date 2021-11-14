@@ -10,7 +10,7 @@
   ],
   "minimum-stability": "stable",
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.2",
     "symfony/var-dumper": "^5.3",
     "ext-pdo": "*",
     "ext-mysqli": "*"

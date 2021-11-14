@@ -28,8 +28,8 @@ class UserController extends BaseController
     {
         $users = $repository->findAll();
 
-        /*
         // Update
+        /*
         $i = 1;
         foreach ($users as $user) {
             $email = $user->getEmail() . $i;
@@ -39,15 +39,15 @@ class UserController extends BaseController
         }
 
         $this->em->flush();
+        */
 
 
         // Remove
-        $user = $repository->findOneBy(['id' => 2]);
+        $user = $repository->findOneBy(['id' => 3]);
 
         $this->em->remove($user);
 
         $this->em->flush();
-        */
 
 
         return $this->render('users/index.php', compact('users'));

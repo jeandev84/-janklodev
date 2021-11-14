@@ -4,16 +4,19 @@ namespace Jan\Component\Database\ORM;
 
 use Exception;
 use InvalidArgumentException;
+use Jan\Component\Database\Connection\Connection;
 use Jan\Component\Database\Connection\PDO\PdoConfiguration;
+use Jan\Component\Database\ORM\Query\Query;
 use Jan\Component\Database\ORM\Query\QueryBuilder;
 use Jan\Component\Database\ORM\Query\QueryBuilderFactory;
-use Jan\Component\Database\ORM\Records\Persistence;
-use Jan\Component\Database\ORM\Records\Deletion;
+use Jan\Component\Database\ORM\Record\Persistence;
+use Jan\Component\Database\ORM\Record\Deletion;
 use Jan\Component\Database\Connection\PDO\PdoConnection;
 use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
+use Jan\Component\Database\ORM\Record\Record;
 use Jan\Component\Database\ORM\Repository\EntityRepository;
 use PDO;
-
+use ReflectionObject;
 
 
 /**
@@ -21,7 +24,7 @@ use PDO;
  *
  * @package Jan\Component\Database\ORM
 */
-class EntityManager implements EntityManagerInterface
+class EntityManager extends ObjectManager implements EntityManagerInterface
 {
 
     /**
@@ -55,9 +58,17 @@ class EntityManager implements EntityManagerInterface
 
 
     /**
-     * @var bool
+     * @var QueryBuilderFactory
     */
-    public $enabledToPersistence = true;
+    protected $builderFactory;
+
+
+
+
+    /**
+     * @var QueryBuilder
+    */
+    protected $qb;
 
 
 
@@ -65,53 +76,24 @@ class EntityManager implements EntityManagerInterface
     /**
      * @var array
     */
-    protected $metas = [];
-
-
-
-
-
-    /**
-     * @param PdoConnection $connection
-    */
-    public function __construct(PdoConnection $connection)
-    {
-          $this->connection  = $connection;
-          $this->persistence = new Persistence($this);
-          $this->deletion    = new Deletion($this);
-    }
-
+    protected $entities = [];
 
 
 
     /**
-     * @param bool $enabled
+     * @var array
     */
-    public function enabledToPersistence(bool $enabled)
-    {
-          $this->enabledToPersistence = $enabled;
-    }
-
-
+    protected $metaObjects = [];
 
 
     /**
-     * @return Persistence
+     * @param Connection $connection
+     * @throws Exception
     */
-    public function getPersistence(): Persistence
+    public function __construct(Connection $connection)
     {
-        return $this->persistence;
-    }
-
-
-
-
-    /**
-     * @return Deletion
-    */
-    public function getDeletion(): Deletion
-    {
-        return $this->deletion;
+          $this->connection     = $connection;
+          $this->builderFactory = new QueryBuilderFactory($connection);
     }
 
 
@@ -125,7 +107,21 @@ class EntityManager implements EntityManagerInterface
     */
     public function map(string $entity, EntityRepository $repository)
     {
-         $this->metas[$entity] = $repository;
+         $this->entities[$entity] = $repository;
+    }
+
+
+
+
+
+    /**
+     * @param array $objects
+    */
+    public function setMetaObjects(array $objects)
+    {
+         foreach ($objects as $object) {
+             $this->persist($object);
+         }
     }
 
 
@@ -142,9 +138,14 @@ class EntityManager implements EntityManagerInterface
 
     /**
      * @return string
+     * @throws Exception
     */
     public function getClassMap(): string
     {
+        if (! $this->classMap) {
+            throw new Exception('no class mapped by entity manager.');
+        }
+
         return $this->classMap;
     }
 
@@ -155,9 +156,9 @@ class EntityManager implements EntityManagerInterface
     /**
      * @return array
     */
-    public function getMetas(): array
+    public function getEntities(): array
     {
-        return $this->metas;
+        return $this->entities;
     }
 
 
@@ -171,31 +172,20 @@ class EntityManager implements EntityManagerInterface
     */
     public function getRepository(string $entity): EntityRepository
     {
-        if (! isset($this->metas[$entity])) {
+        if (! isset($this->entities[$entity])) {
             throw new InvalidArgumentException('Cannot resolve entity ('. $entity . ') from storage repository.');
         }
 
-        return $this->metas[$entity];
+        return $this->entities[$entity];
     }
 
 
 
     /**
-     * @return PdoConnection
-    */
-    public function getPdoConnection(): PdoConnection
-    {
-        return $this->connection;
-    }
-
-
-
-
-    /**
-     * @return PDO
+     * @return mixed
      * @throws Exception
     */
-    public function getConnection(): PDO
+    public function getConnection()
     {
         return $this->connection->getDriverConnection();
     }
@@ -227,51 +217,14 @@ class EntityManager implements EntityManagerInterface
 
 
     /**
-     * @param object $object
+     * @return Query
+     * @throws Exception
     */
-    public function persist($object)
+    public function createQuery(): Query
     {
-         $this->persistence->persist($object);
+        return new Query($this->connection, $this->getClassMap());
     }
 
-
-
-    /**
-     * prepare object to remove
-     *
-     * @param object $object
-     * @return void
-    */
-    public function remove($object)
-    {
-        $this->deletion->remove($object);
-    }
-
-
-
-
-    /**
-     * @return array
-    */
-    public function getFlushCommands(): array
-    {
-        return [$this->getPersistence(), $this->getDeletion()];
-    }
-
-
-
-
-    /**
-     * Flush to database
-     *
-     * @return void
-    */
-    public function flush()
-    {
-        foreach ($this->getFlushCommands() as $flushCommand) {
-            $flushCommand->execute();
-        }
-    }
 
 
 
@@ -281,14 +234,47 @@ class EntityManager implements EntityManagerInterface
     */
     public function createQueryBuilder(): QueryBuilder
     {
-        if ($this->classMap) {
-            $this->connection->setEntityClass($this->getClassMap());
+        return $this->qb = $this->builderFactory->make($this->createQuery());
+    }
+
+
+
+    /**
+     * Flush to database
+     *
+     * @return void
+     * @throws Exception
+    */
+    public function flush()
+    {
+        $objects = $this->qb->getQuery()->getObjectCollections();
+
+        // add to persist
+        foreach ($objects as $object) {
+            $this->update($object);
         }
 
-        $qb = QueryBuilderFactory::make($this->connection);
-        $qb->setEntityManager($this);
+        $this->flushPrivileges(new Record($this));
+    }
 
-        return $qb;
+
+
+
+    /**
+     * @param object $object
+     * @return array
+    */
+    public function getProperties(object $object): array
+    {
+        $mappedProperties = [];
+        $reflectedObject = new ReflectionObject($object);
+
+        foreach($reflectedObject->getProperties() as $property) {
+            $property->setAccessible(true);
+            $mappedProperties[$property->getName()] = $property->getValue($object);
+        }
+
+        return $mappedProperties;
     }
 }
 

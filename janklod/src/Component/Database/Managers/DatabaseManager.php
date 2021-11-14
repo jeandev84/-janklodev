@@ -10,7 +10,7 @@ use Jan\Component\Database\Connection\Contract\ConnectionInterface;
 use Jan\Component\Database\Connection\Connection;
 use Jan\Component\Database\Managers\Contract\DatabaseManagerInterface;
 use Jan\Component\Database\Connection\Contract\QueryInterface;
-use Jan\Component\Database\Schema\Schema;
+use Jan\Component\Database\Migration\Schema;
 use RuntimeException;
 
 
@@ -431,7 +431,7 @@ class DatabaseManager implements DatabaseManagerInterface
     */
     public function query(string $sql, array $params = []): QueryInterface
     {
-        return $this->getConnection()->query($sql, $params);
+        // return $this->getConnection()->query($sql, $params);
     }
 
 

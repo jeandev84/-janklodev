@@ -17,7 +17,7 @@ class AssetServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(Asset::class, function () {
-            return new Asset('http://localhost:8000/');
+            return new Asset(env('APP_URL'));
         });
     }
 }

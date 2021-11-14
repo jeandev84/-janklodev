@@ -2,141 +2,214 @@
 namespace Jan\Component\Database\ORM\Query;
 
 
-use Jan\Component\Database\Connection\Contract\QueryInterface;
-use Jan\Component\Database\Connection\Contract\QueryResultInterface;
-use Jan\Component\Database\Managers\Contract\EntityManagerInterface;
 
+use Exception;
+use Jan\Component\Database\Connection\Connection;
+use Jan\Component\Database\Connection\Contract\QueryInterface;
+use Jan\Component\Database\ORM\Collection\ArrayCollection;
 
 
 /**
- * Class QueryResult
+ * Class Query
  *
  * @package Jan\Component\Database\ORM\Query
 */
-class Query implements QueryResultInterface
+class Query
 {
 
 
-      /**
-       * @var EntityManagerInterface
-      */
-      protected $em;
+    /**
+     * @var ArrayCollection
+    */
+    protected $collections;
+
+
+
+    /**
+     * @var Connection
+    */
+    protected $connection;
 
 
 
 
-      /**
-        * @var QueryInterface
-      */
-      protected $query;
+    /**
+     * @var QueryInterface
+    */
+    protected $query;
 
 
 
 
-      /**
-        * @param QueryInterface $query
-      */
-      public function __construct(QueryInterface $query)
-      {
-            $this->query = $query;
-      }
+    /**
+     * @var string
+    */
+    protected $entityClass = \stdClass::class;
 
 
 
-      /**
-       * @param EntityManagerInterface $em
-      */
-      public function setEntityManager(EntityManagerInterface $em)
-      {
-             $this->em = $em;
-      }
+    /**
+     * Constructor Query
+     *
+     * @param Connection $connection
+     * @param string|null $entityClass
+    */
+    public function __construct(Connection $connection, string $entityClass = null)
+    {
+        $this->connection = $connection;
 
+        if ($entityClass) {
+            $this->entityClass = $entityClass;
+        }
 
-
-
-      /**
-       * @return array
-      */
-      public function getArrayResult(): ?array
-      {
-          return $this->query->getArrayResult();
-      }
+        $this->collections = new ArrayCollection();
+    }
 
 
 
 
-      /**
-       * @return mixed
-      */
-      public function getArrayAssoc()
-      {
-          return $this->query->getArrayAssoc();
-      }
+    /**
+     * @param string $sql
+     * @param array $params
+     * @return Query
+     * @throws Exception
+    */
+    public function query(string $sql, array $params = []): Query
+    {
+        $this->query = $this->connection->query($sql, $params);
+
+        if ($this->entityClass) {
+           $this->query->entityClass($this->entityClass);
+        }
+
+        return $this;
+    }
 
 
 
-      public function getArrayColumns()
-      {
-          return $this->query->getArrayColumns();
-      }
+
+    /**
+     * @return mixed
+    */
+    public function execute()
+    {
+        return $this->query->execute();
+    }
+
+
+
+    /**
+     * @return array
+     * @throws Exception
+    */
+    public function getArrayResult(): array
+    {
+        return $this->query->getArrayAssoc();
+    }
 
 
 
 
-      /**
-       * @return array
-      */
-      public function getResult(): array
-      {
+
+    /**
+     * @return array|false
+     * @throws Exception
+     */
+    public function getArrayAssoc()
+    {
+        return $this->query->getArrayAssoc();
+    }
+
+
+
+
+    /**
+     * @return array|false
+     * @throws Exception
+    */
+    public function getArrayColumns()
+    {
+        return $this->query->getArrayColumns();
+    }
+
+
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function getResult(): array
+    {
          $results = $this->query->getResult();
 
-         return $this->prepareToPersistResults($results);
-      }
+         $this->addResultsToCollection($results);
+
+         return $results;
+    }
 
 
 
-      /**
-       * @return mixed
-      */
-      public function getOneOrNullResult()
-      {
-         $result = $this->query->getOneOrNullResult();
+    /**
+     * @return mixed
+     * @throws Exception
+     */
+    public function getFirstResult()
+    {
+        $result = $this->query->getFirstResult();
 
-         return $this->prepareToPersistResult($result);
-      }
+        $this->addResultToCollection($result);
 
-
-
-
-      /**
-       * @param $result
-      */
-      protected function prepareToPersistResult($result)
-      {
-            if ($this->em instanceof EntityManagerInterface) {
-                if (is_object($result)) {
-                    $this->em->persist($result);
-                }
-            }
-
-            return $result;
-      }
+        return $result;
+    }
 
 
 
+    /**
+     * @return mixed
+     * @throws Exception
+     */
+    public function getOneOrNullResult()
+    {
+        $result = $this->query->getOneOrNullResult();
 
-      /**
-       * @param array $results
-       * @return array
-      */
-      protected function prepareToPersistResults(array $results): array
-      {
-            $collections = [];
+        $this->addResultToCollection($result);
 
-            foreach ($results as $result) {
-                $collections[] = $this->prepareToPersistResult($result);
-            }
+        return $result;
+    }
 
-            return $collections;
-     }
+
+
+
+    /**
+     * @return array
+    */
+    public function getObjectCollections(): array
+    {
+        return $this->collections->getValues();
+    }
+
+
+
+
+    /**
+     * @param array $results
+    */
+    public function addResultsToCollection(array $results)
+    {
+        foreach ($results as $result) {
+            $this->addResultToCollection($result);
+        }
+    }
+
+
+
+    /**
+     * @param $result
+    */
+    public function addResultToCollection($result)
+    {
+        if (is_object($result)) {
+            $this->collections->add($result);
+        }
+    }
 }
