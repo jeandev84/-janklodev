@@ -247,7 +247,7 @@ class EntityManager extends ObjectManager implements EntityManagerInterface
     */
     public function flush()
     {
-        $objects = $this->qb->getQuery()->getObjectCollections();
+        $objects = $this->qb->getQuery()->getResultAsObjects();
 
         // add to persist
         foreach ($objects as $object) {

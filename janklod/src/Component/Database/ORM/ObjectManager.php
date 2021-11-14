@@ -37,22 +37,19 @@ class ObjectManager
 
 
 
-
       /**
        * Add object to update
        *
        * @param $object
+       * @throws \Exception
       */
       public function update($object)
       {
-         if (is_object($object)) {
-            if(method_exists($object, 'getId')) {
-                if ($object->getId()) {
-                    $this->updates[] = $object;
-                }
-            }
-         }
+          if ($object = $this->filterObject($object)) {
+             $this->updates[] = $object;
+          }
       }
+
 
 
 
@@ -61,16 +58,13 @@ class ObjectManager
        * Add object to insert
        *
        * @param $object
+       * @throws \Exception
       */
       public function persist($object)
       {
-           if (is_object($object)) {
-               if(method_exists($object, 'getId')) {
-                   if (! $object->getId()) {
-                       $this->insertions[] = $object;
-                   }
-               }
-           }
+          if ($object = $this->filterObject($object)) {
+              $this->insertions[] = $this->filterObject($object);
+          }
       }
 
 
@@ -80,15 +74,12 @@ class ObjectManager
        * Add object to remove
        *
        * @param $object
+       * @throws \Exception
       */
       public function remove($object)
       {
-          if (is_object($object)) {
-              if(method_exists($object, 'getId')) {
-                  if ($object->getId()) {
-                      $this->removes[] = $object;
-                  }
-              }
+          if ($object = $this->filterObject($object)) {
+              $this->removes[] = $object;
           }
       }
 
@@ -105,25 +96,69 @@ class ObjectManager
            // Begin transaction
 
            if ($this->updates) {
-                foreach ($this->updates as $object) {
-                    $record->update($this->getAttributes($object), $this->createTableName($object), ['id' => $object->getId()]);
-                }
+               $this->updateRecords($record);
            }
 
            if ($this->insertions) {
-               foreach ($this->insertions as $object) {
-                   $record->insert($this->getAttributes($object), $this->createTableName($object));
-               }
+               $this->insertRecords($record);
            }
 
+
            if ($this->removes) {
-               foreach ($this->removes as $object) {
-                   $record->delete($this->createTableName($object), ['id' => $object->getId()]);
-               }
+              $this->removeRecords($record);
            }
 
            // End transaction
            // Flush privileges;
+     }
+
+
+
+
+     /**
+      * @throws \ReflectionException
+      * @throws \Exception
+     */
+     protected function updateRecords(Record $record)
+     {
+         foreach ($this->updates as $object) {
+             if ($id = $object->getId()) {
+                 $record->update($this->getAttributes($object), $this->createTableName($object), ['id' => $id]);
+             }
+         }
+     }
+
+
+
+
+    /**
+     * @param Record $record
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
+     protected function insertRecords(Record $record)
+     {
+         foreach ($this->insertions as $object) {
+             if (! $object->getId()) {
+                 $record->insert($this->getAttributes($object), $this->createTableName($object));
+             }
+         }
+     }
+
+
+
+
+     /**
+      * @throws \ReflectionException
+      * @throws \Exception
+     */
+     protected function removeRecords(Record $record)
+     {
+         foreach ($this->removes as $object) {
+             if ($idR = $object->getId()) {
+                 $record->delete($this->createTableName($object), ['id' => $idR]);
+             }
+         }
      }
 
 
@@ -174,5 +209,36 @@ class ObjectManager
         $name = (new \ReflectionClass($context))->getShortName();
 
         return mb_strtolower(trim($name, 's')). 's';
+    }
+
+
+    /**
+     * @param $object
+     * @return mixed|null
+     * @throws \Exception
+    */
+    public function filterObject($object)
+    {
+        if (! is_object($object)) {
+            return null;
+        }
+
+        if(! method_exists($object, 'getId')) {
+            throw new \Exception('Method getId() must be to implements.');
+        }
+
+        return $object;
+    }
+
+
+
+    /**
+     * @param $object
+     * @return mixed
+     * @throws \Exception
+    */
+    public function getId($object)
+    {
+        return $this->filterObject($object)->getId();
     }
 }

@@ -77,10 +77,7 @@ class Query
     public function query(string $sql, array $params = []): Query
     {
         $this->query = $this->connection->query($sql, $params);
-
-        if ($this->entityClass) {
-           $this->query->entityClass($this->entityClass);
-        }
+        $this->query->entityClass($this->entityClass);
 
         return $this;
     }
@@ -142,7 +139,7 @@ class Query
     {
          $results = $this->query->getResult();
 
-         $this->addResultsToCollection($results);
+         $this->collects($results);
 
          return $results;
     }
@@ -157,7 +154,7 @@ class Query
     {
         $result = $this->query->getFirstResult();
 
-        $this->addResultToCollection($result);
+        $this->collect($result);
 
         return $result;
     }
@@ -172,7 +169,7 @@ class Query
     {
         $result = $this->query->getOneOrNullResult();
 
-        $this->addResultToCollection($result);
+        $this->collect($result);
 
         return $result;
     }
@@ -183,7 +180,7 @@ class Query
     /**
      * @return array
     */
-    public function getObjectCollections(): array
+    public function getResultAsObjects(): array
     {
         return $this->collections->getValues();
     }
@@ -194,10 +191,10 @@ class Query
     /**
      * @param array $results
     */
-    public function addResultsToCollection(array $results)
+    public function collects(array $results)
     {
         foreach ($results as $result) {
-            $this->addResultToCollection($result);
+            $this->collect($result);
         }
     }
 
@@ -206,7 +203,7 @@ class Query
     /**
      * @param $result
     */
-    public function addResultToCollection($result)
+    public function collect($result)
     {
         if (is_object($result)) {
             $this->collections->add($result);
